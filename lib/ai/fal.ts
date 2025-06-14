@@ -1,28 +1,12 @@
-import { fal } from "@fal-ai/client"
-
+// Temporarily disabled - remove @fal-ai/serverless dependency issue
 export async function generateImage(prompt: string, options?: { width?: number; height?: number; style?: string }) {
-  try {
-    const result = await fal.subscribe("fal-ai/flux/schnell", {
-      input: {
-        prompt,
-        image_size: `${options?.width || 1024}x${options?.height || 1024}`,
-        num_inference_steps: 4,
-      },
-    })
-
-    return {
-      imageUrl: result.images[0].url,
-      error: null,
-    }
-  } catch (error) {
-    return {
-      imageUrl: null,
-      error: "Image generation failed",
-    }
+  console.log("Image generation temporarily disabled")
+  return {
+    imageUrl: null,
+    error: "Image generation temporarily disabled. Please configure Fal AI.",
   }
 }
 
-// Keep the other functions with similar updates
 export async function generateFoodImage({
   dishName,
   cuisine,
@@ -32,9 +16,11 @@ export async function generateFoodImage({
   cuisine: string
   style: "photographic" | "artistic" | "minimalist"
 }) {
-  const prompt = `A professional ${style} food photograph of ${dishName}, ${cuisine} cuisine, on a beautiful plate, restaurant presentation, soft lighting, high-end food photography, appetizing, mouth-watering, detailed textures, 8k, high resolution`
-
-  return generateImage(prompt, { width: 1024, height: 768, style })
+  console.log(`Food image generation requested for: ${dishName}`)
+  return {
+    imageUrl: null,
+    error: "Image generation temporarily disabled. Please configure Fal AI.",
+  }
 }
 
 export async function generateRestaurantImage({
@@ -46,7 +32,9 @@ export async function generateRestaurantImage({
   ambiance: string
   time: "day" | "night" | "evening"
 }) {
-  const prompt = `A professional photograph of a ${ambiance} restaurant ${style}, ${time} time, beautiful lighting, inviting atmosphere, high-end restaurant photography, detailed textures, 8k, high resolution`
-
-  return generateImage(prompt, { width: 1200, height: 800 })
+  console.log(`Restaurant image generation requested: ${style} ${ambiance}`)
+  return {
+    imageUrl: null,
+    error: "Image generation temporarily disabled. Please configure Fal AI.",
+  }
 }
