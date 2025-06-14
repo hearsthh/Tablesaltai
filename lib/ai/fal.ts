@@ -1,41 +1,24 @@
-// Temporarily disabled to fix deployment
-export async function generateImage(prompt: string, options?: { width?: number; height?: number; style?: string }) {
-  console.log("Image generation temporarily disabled for deployment")
+// Completely disabled for deployment
+console.log("Fal AI disabled for deployment")
+
+export async function generateImage() {
   return {
     imageUrl: null,
-    error: "Image generation temporarily disabled. Will be re-enabled after successful deployment.",
+    error: "Image generation disabled for deployment",
   }
 }
 
-export async function generateFoodImage({
-  dishName,
-  cuisine,
-  style,
-}: {
-  dishName: string
-  cuisine: string
-  style: "photographic" | "artistic" | "minimalist"
-}) {
-  console.log(`Food image generation requested for: ${dishName} (${cuisine} cuisine, ${style} style)`)
+export async function generateFoodImage() {
   return {
     imageUrl: null,
-    error: "Image generation temporarily disabled. Will be re-enabled after successful deployment.",
+    error: "Image generation disabled for deployment",
   }
 }
 
-export async function generateRestaurantImage({
-  style,
-  ambiance,
-  time,
-}: {
-  style: "interior" | "exterior" | "dining area"
-  ambiance: string
-  time: "day" | "night" | "evening"
-}) {
-  console.log(`Restaurant image generation requested: ${style} ${ambiance} at ${time}`)
+export async function generateRestaurantImage() {
   return {
     imageUrl: null,
-    error: "Image generation temporarily disabled. Will be re-enabled after successful deployment.",
+    error: "Image generation disabled for deployment",
   }
 }
 

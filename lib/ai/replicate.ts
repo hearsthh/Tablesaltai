@@ -137,4 +137,12 @@ export async function generateMarketingGraphic({
   }
 }
 
+// Disabled for deployment
+export async function generateWithReplicate() {
+  return {
+    output: null,
+    error: "Replicate disabled for deployment",
+  }
+}
+
 export { replicate }

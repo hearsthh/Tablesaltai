@@ -207,4 +207,12 @@ export async function getSMSStatus(messageId: string) {
   }
 }
 
+// Disabled for deployment
+export async function sendSMSWithTwilio() {
+  return {
+    success: false,
+    error: "Twilio disabled for deployment",
+  }
+}
+
 export { client as twilioClient }

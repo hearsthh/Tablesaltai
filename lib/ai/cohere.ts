@@ -148,4 +148,12 @@ export async function summarizeContent(text: string, length: "short" | "medium" 
   }
 }
 
+// Disabled for deployment
+export async function generateWithCohere() {
+  return {
+    text: null,
+    error: "Cohere disabled for deployment",
+  }
+}
+
 export { cohere }

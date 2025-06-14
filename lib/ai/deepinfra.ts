@@ -38,5 +38,13 @@ export async function analyzeReviewSentiment(reviewText: string) {
   }
 }
 
+// Disabled for deployment
+export async function generateWithDeepInfra() {
+  return {
+    result: null,
+    error: "DeepInfra disabled for deployment",
+  }
+}
+
 // Export the DeepInfra client for direct use when needed
 export { deepInfraClient }
