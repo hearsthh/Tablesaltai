@@ -1,5 +1,5 @@
 {
-  "name": "tablesalt-ai",
+  "name": "tablesalt-ai-v2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,10 +11,13 @@
   "dependencies": {
     "@ai-sdk/openai": "latest",
     "@anthropic-ai/sdk": "latest",
+    "@radix-ui/react-button": "^1.1.0",
+    "@radix-ui/react-card": "^1.1.0",
     "@radix-ui/react-checkbox": "latest",
     "@radix-ui/react-collapsible": "latest",
     "@radix-ui/react-dialog": "latest",
     "@radix-ui/react-dropdown-menu": "latest",
+    "@radix-ui/react-input": "^1.1.0",
     "@radix-ui/react-label": "latest",
     "@radix-ui/react-progress": "latest",
     "@radix-ui/react-scroll-area": "latest",
@@ -23,6 +26,7 @@
     "@radix-ui/react-slot": "latest",
     "@radix-ui/react-switch": "latest",
     "@radix-ui/react-tabs": "latest",
+    "@radix-ui/react-textarea": "^1.1.0",
     "@radix-ui/react-toast": "latest",
     "@supabase/supabase-js": "latest",
     "ai": "latest",
