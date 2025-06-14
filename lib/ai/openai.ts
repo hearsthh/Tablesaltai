@@ -9,6 +9,13 @@ const openaiClient = new OpenAI({
 
 // Generate text using AI SDK
 export async function generateAIText(prompt: string, options?: { temperature?: number; maxTokens?: number }) {
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      text: null,
+      error: "OpenAI not configured. Please add OPENAI_API_KEY to environment variables.",
+    }
+  }
+
   try {
     const { text } = await generateText({
       model: openai("gpt-4o"),
@@ -80,6 +87,13 @@ export async function generateSocialMediaPost({
 
 // Generate customer insights
 export async function generateCustomerInsights(customerData: any) {
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      insights: null,
+      error: "OpenAI not configured. Please add OPENAI_API_KEY to environment variables.",
+    }
+  }
+
   const prompt = `
     Analyze the following customer data and provide actionable insights:
     ${JSON.stringify(customerData)}

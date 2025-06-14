@@ -43,3 +43,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+export async function POST(request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: "AI customer insights not configured. Please add OpenAI API key.",
+    },
+    { status: 503 },
+  )
+}

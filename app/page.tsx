@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+
+import { useState } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { Logo } from "@/components/logo"
-import { ArrowRight, BarChart3, Users, Target, Zap, Star, CheckCircle, TrendingUp, Globe, Menu, X } from "lucide-react"
+import { BarChart3, Users, Target, Zap, Star, CheckCircle, TrendingUp, Globe, Menu, X } from "lucide-react"
 
 export default function HomePage() {
   const router = useRouter()
@@ -151,7 +152,7 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -178,12 +179,14 @@ export default function HomePage() {
             </nav>
 
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => router.push("/auth/login")}>
-                Sign In
-              </Button>
-              <Button onClick={() => router.push("/auth/signup")} className="bg-slate-900 hover:bg-slate-800">
-                Get Started
-              </Button>
+              <Link href="/auth/login">
+                <Button variant="ghost" className="bg-white hover:bg-slate-100">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/auth/signup">
+                <Button className="bg-orange-600 hover:bg-orange-700">Get Started</Button>
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -212,12 +215,14 @@ export default function HomePage() {
                   About
                 </a>
                 <div className="flex flex-col space-y-2 pt-4">
-                  <Button variant="ghost" onClick={() => router.push("/auth/login")}>
-                    Sign In
-                  </Button>
-                  <Button onClick={() => router.push("/auth/signup")} className="bg-slate-900 hover:bg-slate-800">
-                    Get Started
-                  </Button>
+                  <Link href="/auth/login">
+                    <Button variant="ghost" className="bg-white hover:bg-slate-100">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/auth/signup">
+                    <Button className="bg-orange-600 hover:bg-orange-700">Get Started</Button>
+                  </Link>
                 </div>
               </nav>
             </div>
@@ -226,51 +231,70 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-slate-50 to-blue-50 py-20 sm:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl sm:text-6xl font-bold text-slate-900 mb-6">
-              AI-Powered Marketing for <span className="text-blue-600">Restaurants</span>
-            </h1>
-            <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
-              Transform your restaurant's marketing with intelligent customer insights, automated content creation, and
-              data-driven strategies that drive real results.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button
-                size="lg"
-                className="bg-slate-900 hover:bg-slate-800 text-lg px-8 py-3"
-                onClick={() => router.push("/auth/signup")}
-              >
-                Start Free Trial
-                <ArrowRight className="w-5 h-5 ml-2" />
+      <div className="container mx-auto px-4 py-16">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">🧂 TableSalt AI</h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">AI-Powered Marketing Platform for Restaurants</p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/auth/signup">
+              <Button size="lg" className="bg-orange-600 hover:bg-orange-700">
+                Get Started
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 py-3 border-slate-300"
-                onClick={() => router.push("/demo")}
-              >
-                Watch Demo
+            </Link>
+            <Link href="/auth/login">
+              <Button size="lg" variant="outline">
+                Sign In
               </Button>
-            </div>
-            <div className="flex items-center justify-center space-x-6 text-sm text-slate-500">
-              <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                14-day free trial
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                No credit card required
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                Cancel anytime
-              </div>
-            </div>
+            </Link>
           </div>
         </div>
-      </section>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">🍽️ Restaurant Profiles</CardTitle>
+              <CardDescription>Manage your restaurant information and settings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Create and customize your restaurant profile with Supabase integration.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">📊 Customer Management</CardTitle>
+              <CardDescription>Track and analyze customer data</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">Store and manage customer information with database integration.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">🎯 Marketing Tools</CardTitle>
+              <CardDescription>Campaign management and analytics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600">
+                Basic marketing tools and campaign tracking (AI features coming soon).
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-16 text-center">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-2xl mx-auto">
+            <h3 className="font-semibold text-yellow-800 mb-2">🚧 Development Mode</h3>
+            <p className="text-yellow-700 text-sm">
+              AI features are currently being configured. Basic restaurant management and Supabase integration are ready
+              to test.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-white">
@@ -375,9 +399,9 @@ export default function HomePage() {
             {pricingPlans.map((plan, index) => (
               <Card key={index} className={`border-slate-200 relative ${plan.popular ? "ring-2 ring-blue-500" : ""}`}>
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full">
                     Most Popular
-                  </Badge>
+                  </div>
                 )}
                 <CardContent className="p-8">
                   <h3 className="text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
@@ -394,12 +418,13 @@ export default function HomePage() {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    className={`w-full ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : "bg-slate-900 hover:bg-slate-800"}`}
-                    onClick={() => router.push("/auth/signup")}
-                  >
-                    Start Free Trial
-                  </Button>
+                  <Link href="/auth/signup">
+                    <Button
+                      className={`w-full ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : "bg-slate-900 hover:bg-slate-800"}`}
+                    >
+                      Start Free Trial
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -424,9 +449,11 @@ export default function HomePage() {
               onChange={(e) => setEmail(e.target.value)}
               className="max-w-sm bg-white"
             />
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push("/auth/signup")}>
-              Get Started Free
-            </Button>
+            <Link href="/auth/signup">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                Get Started Free
+              </Button>
+            </Link>
           </div>
           <p className="text-sm text-slate-400">No credit card required • 14-day free trial • Cancel anytime</p>
         </div>

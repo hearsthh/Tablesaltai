@@ -3,6 +3,17 @@ import { generateMarketingContent } from "@/lib/ai/openai"
 import { serverAuthService } from "@/lib/auth/auth-service"
 
 export async function POST(request: NextRequest) {
+  // Check if AI services are configured
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    return NextResponse.json(
+      {
+        error: "AI services not configured. Please add API keys to environment variables.",
+      },
+      { status: 503 },
+    )
+  }
+
   try {
     // Verify authentication
     const { user, error: authError } = await serverAuthService.getCurrentUser()
