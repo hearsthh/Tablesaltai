@@ -1,69 +1,30 @@
-import { fal } from "@fal-ai/serverless"
+import { fal } from "@fal-ai/client"
 
-// Initialize Fal client
-const falClient = fal(process.env.FAL_API_KEY || "")
+interface ImageGenerationOptions {
+  width?: number
+  height?: number
+}
 
-// Generate image using text prompt
-export async function generateImage(prompt: string, options?: { width?: number; height?: number; style?: string }) {
+export async function generateImage(prompt: string, options: ImageGenerationOptions = {}) {
   try {
-    const width = options?.width || 1024
-    const height = options?.height || 1024
-    const style = options?.style || "photographic"
-
-    const result = await falClient.run({
-      model: "fal-ai/fast-sdxl",
+    const result = await fal.subscribe("fal-ai/flux/schnell", {
       input: {
-        prompt: prompt,
-        width: width,
-        height: height,
-        style_preset: style,
+        prompt,
+        image_size: `${options.width || 1024}x${options.height || 1024}`,
+        num_inference_steps: 4,
+        enable_safety_checker: true,
       },
     })
 
-    return { imageUrl: result.images[0].url, error: null }
+    return {
+      imageUrl: result.images[0].url,
+      error: null,
+    }
   } catch (error) {
-    console.error("Error generating image:", error)
-    return { imageUrl: null, error: "Failed to generate image. Please try again." }
+    console.error("Fal AI error:", error)
+    return {
+      imageUrl: null,
+      error: error instanceof Error ? error.message : "Image generation failed",
+    }
   }
 }
-
-// Generate food image
-export async function generateFoodImage({
-  dishName,
-  cuisine,
-  style,
-}: {
-  dishName: string
-  cuisine: string
-  style: "photographic" | "artistic" | "minimalist"
-}) {
-  const prompt = `
-    A professional ${style} food photograph of ${dishName}, ${cuisine} cuisine, 
-    on a beautiful plate, restaurant presentation, soft lighting, high-end food photography,
-    appetizing, mouth-watering, detailed textures, 8k, high resolution
-  `
-
-  return generateImage(prompt, { width: 1024, height: 768, style })
-}
-
-// Generate restaurant ambiance image
-export async function generateRestaurantImage({
-  style,
-  ambiance,
-  time,
-}: {
-  style: "interior" | "exterior" | "dining area"
-  ambiance: string
-  time: "day" | "night" | "evening"
-}) {
-  const prompt = `
-    A professional photograph of a ${ambiance} restaurant ${style}, ${time} time,
-    beautiful lighting, inviting atmosphere, high-end restaurant photography,
-    detailed textures, 8k, high resolution
-  `
-
-  return generateImage(prompt, { width: 1200, height: 800 })
-}
-
-// Export the Fal client for direct use when needed
-export { falClient }
