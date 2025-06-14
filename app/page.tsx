@@ -1,10 +1,8 @@
 "use client"
-
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
-import { BarChart3, Users, Target, Zap, Star, CheckCircle, TrendingUp, Globe, Menu, X, XCircle } from "lucide-react"
+import { BarChart3, Users, Target, Zap, Star, CheckCircle, TrendingUp, Globe, Menu, X } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -151,7 +149,7 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -234,17 +232,34 @@ export default function HomePage() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">🧂 TableSalt AI</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">AI-Powered Marketing Platform for Restaurants</p>
-          <div className="flex gap-4 justify-center">
-            <Link href="/auth/signup">
-              <Button size="lg" className="bg-orange-600 hover:bg-orange-700">
-                Get Started
-              </Button>
-            </Link>
-            <Link href="/auth/login">
-              <Button size="lg" variant="outline">
-                Sign In
-              </Button>
-            </Link>
+          <div className="max-w-2xl mx-auto bg-green-50 border border-green-200 rounded-lg p-6">
+            <h2 className="text-2xl font-semibold text-green-800 mb-2">✅ Deployment Successful!</h2>
+            <p className="text-green-700">
+              The core platform is now running. Ready to add AI integrations and features.
+            </p>
+          </div>
+
+          <div className="mt-8 grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h3 className="font-semibold text-blue-900 mb-2">Next Steps</h3>
+              <p className="text-blue-700 text-sm">Add OpenAI API key to enable content generation</p>
+            </div>
+
+            <div className="bg-purple-50 p-6 rounded-lg">
+              <h3 className="font-semibold text-purple-900 mb-2">Image Generation</h3>
+              <p className="text-purple-700 text-sm">Install Fal integration for AI-powered images</p>
+            </div>
+
+            <div className="bg-orange-50 p-6 rounded-lg">
+              <h3 className="font-semibold text-orange-900 mb-2">Database</h3>
+              <p className="text-orange-700 text-sm">Supabase integration ready to configure</p>
+            </div>
+          </div>
+
+          <div className="mt-12">
+            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+              Get Started
+            </button>
           </div>
         </div>
 
@@ -282,81 +297,6 @@ export default function HomePage() {
               </p>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="mt-16 text-center">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-2xl mx-auto">
-            <h3 className="font-semibold text-yellow-800 mb-2">🚧 Development Mode</h3>
-            <p className="text-yellow-700 text-sm">
-              AI features are currently being configured. Basic restaurant management and Supabase integration are ready
-              to test.
-            </p>
-          </div>
-        </div>
-
-        {/* Platform Status and Next Steps Section */}
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">TableSalt AI</h1>
-            <p className="text-xl text-gray-600">AI-Powered Restaurant Marketing Platform</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  Platform Status
-                </CardTitle>
-                <CardDescription>Core platform is now deployed successfully</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Next.js Application</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Supabase Database</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <XCircle className="h-4 w-4 text-red-500" />
-                    <span>AI Features (Pending API Keys)</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Next Steps</CardTitle>
-                <CardDescription>Configure AI services to unlock full functionality</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900">1. Add OpenAI API Key</h4>
-                    <p className="text-sm text-blue-700">Enable content generation</p>
-                  </div>
-                  <div className="p-3 bg-purple-50 rounded-lg">
-                    <h4 className="font-medium text-purple-900">2. Install Fal Integration</h4>
-                    <p className="text-sm text-purple-700">Enable image generation</p>
-                  </div>
-                  <div className="p-3 bg-green-50 rounded-lg">
-                    <h4 className="font-medium text-green-900">3. Test Features</h4>
-                    <p className="text-sm text-green-700">Verify all AI services work</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="text-center">
-            <Button size="lg" className="bg-orange-600 hover:bg-orange-700">
-              Get Started
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -493,33 +433,6 @@ export default function HomePage() {
               </Card>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Ready to Transform Your Restaurant Marketing?
-          </h2>
-          <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
-            Join thousands of restaurants already using TableSalt AI to grow their business.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="max-w-sm bg-white"
-            />
-            <Link href="/auth/signup">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                Get Started Free
-              </Button>
-            </Link>
-          </div>
-          <p className="text-sm text-slate-400">No credit card required • 14-day free trial • Cancel anytime</p>
         </div>
       </section>
 
