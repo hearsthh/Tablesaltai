@@ -149,9 +149,9 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <header className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Logo size="md" />
@@ -194,34 +194,15 @@ export default function HomePage() {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-slate-200">
-              <nav className="flex flex-col space-y-4">
-                <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Features
-                </a>
-                <a href="#modules" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Modules
-                </a>
-                <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Pricing
-                </a>
-                <a href="#testimonials" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Reviews
-                </a>
-                <a href="#about" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  About
-                </a>
-                <div className="flex flex-col space-y-2 pt-4">
-                  <Link href="/auth/login">
-                    <Button variant="ghost" className="bg-white hover:bg-slate-100">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link href="/auth/signup">
-                    <Button className="bg-orange-600 hover:bg-orange-700">Get Started</Button>
-                  </Link>
-                </div>
-              </nav>
+            <div className="md:hidden border-t bg-white py-2 space-y-1">
+              <Link href="/auth/login">
+                <Button variant="ghost" className="w-full justify-start">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/auth/signup">
+                <Button className="w-full bg-orange-600 hover:bg-orange-700">Get Started</Button>
+              </Link>
             </div>
           )}
         </div>
@@ -233,68 +214,92 @@ export default function HomePage() {
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">🧂 TableSalt AI</h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">AI-Powered Marketing Platform for Restaurants</p>
           <div className="max-w-2xl mx-auto bg-green-50 border border-green-200 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold text-green-800 mb-2">✅ Deployment Successful!</h2>
+            <h2 className="text-2xl font-semibold text-green-800 mb-2">✅ Platform Ready!</h2>
             <p className="text-green-700">
-              The core platform is now running. Ready to add AI integrations and features.
+              All core features are deployed and ready. OpenAI integration is active for real AI content generation.
             </p>
           </div>
 
           <div className="mt-8 grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="bg-blue-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Next Steps</h3>
-              <p className="text-blue-700 text-sm">Add OpenAI API key to enable content generation</p>
+              <h3 className="font-semibold text-blue-900 mb-2">🤖 AI Features Active</h3>
+              <p className="text-blue-700 text-sm">OpenAI integration ready for content generation</p>
             </div>
 
             <div className="bg-purple-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-purple-900 mb-2">Image Generation</h3>
-              <p className="text-purple-700 text-sm">Install Fal integration for AI-powered images</p>
+              <h3 className="font-semibold text-purple-900 mb-2">🍽️ Menu Builder</h3>
+              <p className="text-purple-700 text-sm">AI-powered menu optimization and insights</p>
             </div>
 
             <div className="bg-orange-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-orange-900 mb-2">Database</h3>
-              <p className="text-orange-700 text-sm">Supabase integration ready to configure</p>
+              <h3 className="font-semibold text-orange-900 mb-2">📊 Analytics</h3>
+              <p className="text-orange-700 text-sm">Customer insights and marketing analytics</p>
             </div>
           </div>
 
-          <div className="mt-12">
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-              Get Started
-            </button>
+          <div className="mt-12 space-y-4">
+            <Link href="/profile/menu-builder">
+              <Button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors mr-4">
+                🚀 Test Menu Builder AI
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="outline" className="px-8 py-3 rounded-lg">
+                View Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">🍽️ Restaurant Profiles</CardTitle>
-              <CardDescription>Manage your restaurant information and settings</CardDescription>
+              <CardTitle className="flex items-center gap-2">🍽️ Menu Builder</CardTitle>
+              <CardDescription>AI-powered menu optimization with real content generation</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600">
-                Create and customize your restaurant profile with Supabase integration.
+              <p className="text-sm text-gray-600 mb-4">
+                Generate menu descriptions, analyze pricing, get brand insights, and create seasonal menus with OpenAI.
               </p>
+              <Link href="/profile/menu-builder">
+                <Button size="sm" className="w-full">
+                  Test AI Features
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">📊 Customer Management</CardTitle>
-              <CardDescription>Track and analyze customer data</CardDescription>
+              <CardTitle className="flex items-center gap-2">📊 Customer Analytics</CardTitle>
+              <CardDescription>AI-driven customer insights and segmentation</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600">Store and manage customer information with database integration.</p>
+              <p className="text-sm text-gray-600 mb-4">
+                Analyze customer behavior, predict churn, and get personalized marketing recommendations.
+              </p>
+              <Link href="/customers">
+                <Button size="sm" className="w-full" variant="outline">
+                  Explore Analytics
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">🎯 Marketing Tools</CardTitle>
-              <CardDescription>Campaign management and analytics</CardDescription>
+              <CardTitle className="flex items-center gap-2">🎯 Marketing Hub</CardTitle>
+              <CardDescription>AI content generation and campaign management</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600">
-                Basic marketing tools and campaign tracking (AI features coming soon).
+              <p className="text-sm text-gray-600 mb-4">
+                Create marketing campaigns, generate social media content, and optimize ad performance.
               </p>
+              <Link href="/marketing">
+                <Button size="sm" className="w-full" variant="outline">
+                  Try Marketing Tools
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
@@ -465,9 +470,9 @@ export default function HomePage() {
                   </a>
                 </li>
                 <li>
-                  <a href="/demo" className="hover:text-slate-900">
-                    Demo
-                  </a>
+                  <Link href="/profile/menu-builder" className="hover:text-slate-900">
+                    Menu Builder
+                  </Link>
                 </li>
               </ul>
             </div>
