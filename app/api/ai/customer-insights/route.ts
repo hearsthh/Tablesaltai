@@ -1,65 +1,76 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateCustomerInsights } from "@/lib/ai/openai"
-import { serverAuthService } from "@/lib/auth/auth-service"
 import { getSupabaseServerClient } from "@/lib/supabase/client"
+import { generateAIText } from "@/lib/ai/openai"
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
+    const { customerId, restaurantId } = await request.json()
+
+    if (!customerId || !restaurantId) {
+      return NextResponse.json({ error: "Customer ID and Restaurant ID are required" }, { status: 400 })
+    }
+
     // Check if OpenAI is configured
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         {
-          error: "OpenAI API key not configured. Please add OPENAI_API_KEY environment variable.",
-          insights: "AI customer insights require OpenAI configuration.",
+          insights: null,
+          error: "OpenAI API key not configured. Please add OPENAI_API_KEY environment variable to enable AI insights.",
         },
-        { status: 503 },
+        { status: 200 },
       )
     }
 
-    // Verify authentication
-    const { user, error: authError } = await serverAuthService.getCurrentUser()
+    try {
+      // Get Supabase client
+      const supabase = getSupabaseServerClient()
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      // Fetch customer data
+      const { data: customer, error: customerError } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("id", customerId)
+        .eq("restaurant_id", restaurantId)
+        .single()
+
+      if (customerError) {
+        console.error("Error fetching customer:", customerError)
+        return NextResponse.json({ error: "Customer not found" }, { status: 404 })
+      }
+
+      // Generate AI insights
+      const prompt = `Analyze this customer data and provide marketing insights:
+      Name: ${customer.name}
+      Email: ${customer.email}
+      Visit frequency: ${customer.visit_frequency || "Unknown"}
+      Preferences: ${customer.preferences?.join(", ") || "None specified"}
+      Last visit: ${customer.last_visit || "Unknown"}
+      
+      Provide insights on:
+      1. Customer segment
+      2. Recommended marketing approach
+      3. Personalization opportunities
+      4. Retention strategies`
+
+      const { text: insights } = await generateAIText(prompt)
+
+      return NextResponse.json({
+        insights,
+        customer,
+        error: null,
+      })
+    } catch (supabaseError) {
+      console.error("Supabase error:", supabaseError)
+      return NextResponse.json(
+        {
+          insights: null,
+          error: "Database connection not available. Please configure Supabase integration.",
+        },
+        { status: 200 },
+      )
     }
-
-    // Get restaurant profile
-    const { profile, error: profileError } = await serverAuthService.getUserProfile(user.id)
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: "Restaurant profile not found" }, { status: 404 })
-    }
-
-    // Get customer data
-    const supabase = getSupabaseServerClient()
-    const { data: customers, error: customersError } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("restaurant_id", profile.id)
-
-    if (customersError) {
-      return NextResponse.json({ error: customersError.message }, { status: 500 })
-    }
-
-    // Generate insights
-    const { insights, error } = await generateCustomerInsights(customers || [])
-
-    if (error) {
-      return NextResponse.json({ error }, { status: 500 })
-    }
-
-    return NextResponse.json({ insights })
   } catch (error) {
-    console.error("Customer insights error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error generating customer insights:", error)
+    return NextResponse.json({ error: "Failed to generate insights" }, { status: 500 })
   }
-}
-
-export async function POST(request: NextRequest) {
-  return NextResponse.json(
-    {
-      error: "AI customer insights not configured. Please add OpenAI API key.",
-    },
-    { status: 503 },
-  )
 }

@@ -18,11 +18,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 })
     }
 
-    // Generate embeddings for the profile
-    const { embeddings, error: embeddingsError } = await generateEmbeddings(profile)
+    // Generate embeddings for the profile (with graceful fallback)
+    const profileText = typeof profile === "string" ? profile : JSON.stringify(profile || {})
+    const { embeddings, error: embeddingsError } = await generateEmbeddings(profileText)
 
     if (embeddingsError) {
-      return NextResponse.json({ error: "Failed to generate embeddings" }, { status: 500 })
+      console.warn("Embeddings generation failed:", embeddingsError)
+      // Continue without embeddings rather than failing
+      return NextResponse.json(
+        {
+          profile,
+          embeddings: null,
+          warning: "Embeddings not available - AI features may be limited",
+        },
+        { status: 200 },
+      )
     }
 
     // Return the profile with embeddings
