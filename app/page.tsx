@@ -1,14 +1,13 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/logo"
+import { BarChart3, Users, Target, Zap, Star, CheckCircle, TrendingUp, Globe, Menu, X, XCircle } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
-import { Logo } from "@/components/logo"
-import { BarChart3, Users, Target, Zap, Star, CheckCircle, TrendingUp, Globe, Menu, X } from "lucide-react"
 
 export default function HomePage() {
   const router = useRouter()
@@ -292,6 +291,71 @@ export default function HomePage() {
               AI features are currently being configured. Basic restaurant management and Supabase integration are ready
               to test.
             </p>
+          </div>
+        </div>
+
+        {/* Platform Status and Next Steps Section */}
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">TableSalt AI</h1>
+            <p className="text-xl text-gray-600">AI-Powered Restaurant Marketing Platform</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  Platform Status
+                </CardTitle>
+                <CardDescription>Core platform is now deployed successfully</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Next.js Application</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span>Supabase Database</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-red-500" />
+                    <span>AI Features (Pending API Keys)</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Next Steps</CardTitle>
+                <CardDescription>Configure AI services to unlock full functionality</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-900">1. Add OpenAI API Key</h4>
+                    <p className="text-sm text-blue-700">Enable content generation</p>
+                  </div>
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <h4 className="font-medium text-purple-900">2. Install Fal Integration</h4>
+                    <p className="text-sm text-purple-700">Enable image generation</p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <h4 className="font-medium text-green-900">3. Test Features</h4>
+                    <p className="text-sm text-green-700">Verify all AI services work</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <Button size="lg" className="bg-orange-600 hover:bg-orange-700">
+              Get Started
+            </Button>
           </div>
         </div>
       </div>
