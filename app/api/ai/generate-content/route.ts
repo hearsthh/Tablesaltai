@@ -1,31 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateMarketingContent } from "@/lib/ai/openai"
-import { serverAuthService } from "@/lib/auth/auth-service"
 
 export async function POST(request: NextRequest) {
-  // Check if AI services are configured
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    return NextResponse.json(
-      {
-        error: "AI services not configured. Please add API keys to environment variables.",
-      },
-      { status: 503 },
-    )
-  }
-
   try {
-    // Verify authentication
-    const { user, error: authError } = await serverAuthService.getCurrentUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    // Check if OpenAI is configured
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        {
+          error: "OpenAI API key not configured. Please add OPENAI_API_KEY environment variable.",
+          content: null,
+        },
+        { status: 503 },
+      )
     }
 
     const { type, topic, tone, keywords, length, audience } = await request.json()
 
     if (!type || !topic) {
-      return NextResponse.json({ error: "Type and topic are required" }, { status: 400 })
+      return NextResponse.json({ error: "Missing required parameters" }, { status: 400 })
     }
 
     const { text, error } = await generateMarketingContent({

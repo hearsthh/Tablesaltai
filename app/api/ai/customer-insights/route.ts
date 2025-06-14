@@ -1,10 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateCustomerInsights } from "@/lib/ai/openai"
 import { serverAuthService } from "@/lib/auth/auth-service"
-import { getSupabaseServerClient } from "@/lib/supabase/client" // Declare the variable before using it
+import { getSupabaseServerClient } from "@/lib/supabase/client"
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if OpenAI is configured
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        {
+          error: "OpenAI API key not configured. Please add OPENAI_API_KEY environment variable.",
+          insights: "AI customer insights require OpenAI configuration.",
+        },
+        { status: 503 },
+      )
+    }
+
     // Verify authentication
     const { user, error: authError } = await serverAuthService.getCurrentUser()
 
@@ -31,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate insights
-    const { insights, error } = await generateCustomerInsights(customers)
+    const { insights, error } = await generateCustomerInsights(customers || [])
 
     if (error) {
       return NextResponse.json({ error }, { status: 500 })

@@ -1,37 +1,51 @@
-import { OpenAI } from "openai"
-import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
+import OpenAI from "openai"
 
-// Initialize OpenAI client
-const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialization - only create client when needed
+let openaiClient: OpenAI | null = null
 
-// Generate text using AI SDK
-export async function generateAIText(prompt: string, options?: { temperature?: number; maxTokens?: number }) {
-  if (!process.env.OPENAI_API_KEY) {
-    return {
-      text: null,
-      error: "OpenAI not configured. Please add OPENAI_API_KEY to environment variables.",
+function getOpenAIClient() {
+  if (!openaiClient) {
+    const apiKey = process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      throw new Error("OpenAI API key not configured")
     }
+    openaiClient = new OpenAI({ apiKey })
   }
+  return openaiClient
+}
 
+// Update all functions to use the lazy client
+export async function generateAIText(
+  prompt: string,
+  options: {
+    temperature?: number
+    maxTokens?: number
+    model?: string
+  } = {},
+) {
   try {
-    const { text } = await generateText({
-      model: openai("gpt-4o"),
-      prompt,
-      temperature: options?.temperature || 0.7,
-      maxTokens: options?.maxTokens || 500,
+    const client = getOpenAIClient()
+
+    const completion = await client.chat.completions.create({
+      model: options.model || "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      temperature: options.temperature || 0.7,
+      max_tokens: options.maxTokens || 500,
     })
 
-    return { text, error: null }
+    return {
+      text: completion.choices[0]?.message?.content || "",
+      error: null,
+    }
   } catch (error) {
-    console.error("Error generating text:", error)
-    return { text: null, error: "Failed to generate text. Please try again." }
+    console.error("OpenAI generation error:", error)
+    return {
+      text: null,
+      error: error instanceof Error ? error.message : "Failed to generate text",
+    }
   }
 }
 
-// Generate content for marketing
 export async function generateMarketingContent({
   type,
   topic,
@@ -44,115 +58,74 @@ export async function generateMarketingContent({
   topic: string
   tone: string
   keywords: string[]
-  length: "short" | "medium" | "long"
+  length: string
   audience: string
 }) {
-  const prompt = `
-    Create ${type} content about "${topic}".
-    Tone: ${tone}
-    Target audience: ${audience}
-    Keywords to include: ${keywords.join(", ")}
-    Length: ${length}
-    
-    The content should be engaging, SEO-friendly, and tailored for a restaurant marketing context.
-  `
+  try {
+    const client = getOpenAIClient()
 
-  return generateAIText(prompt, { temperature: 0.8 })
+    const prompt = `Create a ${type} about ${topic} with a ${tone} tone for ${audience}. 
+    Include these keywords: ${keywords.join(", ")}. 
+    Length: ${length}. 
+    Make it engaging and restaurant-focused.`
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.8,
+      max_tokens: length === "short" ? 150 : length === "medium" ? 300 : 500,
+    })
+
+    return {
+      text: completion.choices[0]?.message?.content || "",
+      error: null,
+    }
+  } catch (error) {
+    console.error("Marketing content generation error:", error)
+    return {
+      text: null,
+      error: error instanceof Error ? error.message : "Failed to generate marketing content",
+    }
+  }
 }
 
-// Generate social media post
-export async function generateSocialMediaPost({
-  platform,
-  topic,
-  tone,
-  includeHashtags,
-  restaurantName,
-}: {
-  platform: string
-  topic: string
-  tone: string
-  includeHashtags: boolean
-  restaurantName: string
-}) {
-  const prompt = `
-    Create a ${platform} post about "${topic}" for restaurant "${restaurantName}".
-    Tone: ${tone}
-    ${includeHashtags ? "Include relevant hashtags at the end." : ""}
+export async function generateCustomerInsights(customers: any[]) {
+  try {
+    const client = getOpenAIClient()
+
+    const customerSummary = customers
+      .slice(0, 10)
+      .map(
+        (c) =>
+          `Customer: ${c.name}, Visits: ${c.visit_count || 0}, Preferences: ${c.preferences?.join(", ") || "None"}`,
+      )
+      .join("\n")
+
+    const prompt = `Analyze these restaurant customers and provide insights:
+    ${customerSummary}
     
-    The post should be engaging and formatted appropriately for ${platform}.
-  `
+    Provide insights on:
+    1. Customer segments
+    2. Popular preferences
+    3. Visit patterns
+    4. Marketing recommendations`
 
-  return generateAIText(prompt, { temperature: 0.8 })
-}
+    const completion = await client.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      max_tokens: 600,
+    })
 
-// Generate customer insights
-export async function generateCustomerInsights(customerData: any) {
-  if (!process.env.OPENAI_API_KEY) {
+    return {
+      insights: completion.choices[0]?.message?.content || "",
+      error: null,
+    }
+  } catch (error) {
+    console.error("Customer insights generation error:", error)
     return {
       insights: null,
-      error: "OpenAI not configured. Please add OPENAI_API_KEY to environment variables.",
+      error: error instanceof Error ? error.message : "Failed to generate customer insights",
     }
   }
-
-  const prompt = `
-    Analyze the following customer data and provide actionable insights:
-    ${JSON.stringify(customerData)}
-    
-    Focus on:
-    1. Segmentation opportunities
-    2. Churn risk factors
-    3. Upselling opportunities
-    4. Personalization recommendations
-    
-    Format the response as JSON with the following structure:
-    {
-      "segments": [],
-      "churnRisks": [],
-      "upsellOpportunities": [],
-      "personalizationIdeas": []
-    }
-  `
-
-  const { text, error } = await generateAIText(prompt, { temperature: 0.2 })
-
-  if (error || !text) {
-    return { insights: null, error: error || "Failed to generate insights" }
-  }
-
-  try {
-    const insights = JSON.parse(text)
-    return { insights, error: null }
-  } catch (e) {
-    return { insights: null, error: "Failed to parse insights" }
-  }
 }
-
-// Generate menu descriptions
-export async function generateMenuDescription({
-  dishName,
-  ingredients,
-  cuisine,
-  isSignature,
-  isVegetarian,
-}: {
-  dishName: string
-  ingredients: string[]
-  cuisine: string
-  isSignature: boolean
-  isVegetarian: boolean
-}) {
-  const prompt = `
-    Create an appetizing menu description for "${dishName}".
-    Ingredients: ${ingredients.join(", ")}
-    Cuisine type: ${cuisine}
-    ${isSignature ? "This is a signature dish of the restaurant." : ""}
-    ${isVegetarian ? "This is a vegetarian dish." : ""}
-    
-    The description should be mouth-watering, concise, and highlight the key flavors and preparation methods.
-  `
-
-  return generateAIText(prompt, { temperature: 0.7, maxTokens: 100 })
-}
-
-// Export the OpenAI client for direct use when needed
-export { openaiClient }

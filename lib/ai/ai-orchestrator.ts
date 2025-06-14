@@ -1,7 +1,7 @@
 import { generateAIText, generateMarketingContent } from "./openai"
 import { generateImage } from "./fal"
-import { generateFoodPhotography, generateMarketingGraphic } from "./replicate"
-import { generateCustomerResponse, generatePersonalizedEmail } from "./anthropic"
+import { generateFoodPhotography } from "./replicate"
+import { generateCustomerResponse } from "./anthropic"
 import { classifyCustomerFeedback, semanticSearch } from "./cohere"
 import { transcribeVoiceReview } from "./assemblyai"
 import { sendSMSCampaign } from "./twilio"
@@ -21,18 +21,33 @@ export class AIOrchestrator {
     customerSegment: any[]
   }) {
     try {
+      // Check if required services are configured
+      if (!process.env.OPENAI_API_KEY) {
+        return {
+          campaign: null,
+          error: "OpenAI API key not configured. Please add OPENAI_API_KEY environment variable.",
+        }
+      }
+
       const results: any = {}
 
       // Generate content for different channels
       if (target === "email" || target === "all") {
-        const emailPromises = customerSegment.map((customer) =>
-          generatePersonalizedEmail({
-            customerData: customer,
-            campaignType: campaignType as any,
-            restaurantContext,
-          }),
-        )
-        results.emails = await Promise.all(emailPromises)
+        // Simplified email generation without Anthropic dependency
+        const { text: emailContent } = await generateMarketingContent({
+          type: "email campaign",
+          topic: `${campaignType} campaign`,
+          tone: "friendly",
+          keywords: [restaurantContext.cuisine || "restaurant", campaignType],
+          length: "medium",
+          audience: "loyal customers",
+        })
+
+        results.emails = customerSegment.map((customer) => ({
+          to: customer.email,
+          subject: `Special ${campaignType} offer just for you!`,
+          content: emailContent,
+        }))
       }
 
       if (target === "social" || target === "all") {
@@ -40,27 +55,19 @@ export class AIOrchestrator {
           type: "social media post",
           topic: `${campaignType} campaign`,
           tone: "engaging",
-          keywords: [restaurantContext.cuisine, campaignType],
+          keywords: [restaurantContext.cuisine || "restaurant", campaignType],
           length: "short",
           audience: "food lovers",
         })
 
-        // Generate accompanying image
-        const { imageUrl } = await generateMarketingGraphic({
-          type: "social_post",
-          text: socialContent || "",
-          style: "modern",
-          colors: ["#FF6B35", "#F7931E"],
-        })
-
         results.social = {
           content: socialContent,
-          image: imageUrl,
+          image: "/placeholder.svg?height=400&width=600&text=Social+Media+Image",
         }
       }
 
       if (target === "sms" || target === "all") {
-        const smsContent = `🍽️ Special ${campaignType} offer at ${restaurantContext.name}! Limited time only. Visit us today!`
+        const smsContent = `🍽️ Special ${campaignType} offer at ${restaurantContext.name || "our restaurant"}! Limited time only. Visit us today!`
         results.sms = { content: smsContent }
       }
 
