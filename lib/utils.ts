@@ -5,17 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Color palette for consistent usage across the app
 export const appColors = {
-  // Primary colors
   primary: {
     bg: "bg-slate-900",
     hover: "hover:bg-slate-800",
     text: "text-slate-900",
     border: "border-slate-900",
   },
-
-  // Accent colors (pastel)
   accent: {
     blue: {
       bg: "bg-blue-50",
@@ -43,8 +39,6 @@ export const appColors = {
       border: "border-orange-200",
     },
   },
-
-  // Neutral colors
   neutral: {
     bg: "bg-white",
     card: "bg-white",
@@ -58,14 +52,12 @@ export const appColors = {
   },
 }
 
-// Function to ensure modals don't exceed screen height
 export function useResponsiveModal() {
   return {
     className: "max-h-[85vh] overflow-y-auto p-6 max-w-[95vw] w-full md:w-auto",
   }
 }
 
-// Function to ensure content doesn't cause horizontal scrolling
 export function ensureNoHorizontalScroll() {
   if (typeof document !== "undefined") {
     document.body.style.overflowX = "hidden"

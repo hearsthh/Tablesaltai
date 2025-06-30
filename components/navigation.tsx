@@ -1,341 +1,277 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Logo } from "@/components/logo"
-import {
-  Users,
-  TrendingUp,
-  Globe,
-  Menu,
-  X,
-  BarChart3,
-  ChevronDown,
-  Settings,
-  LogOut,
-  User,
-  Bell,
-  Search,
-} from "lucide-react"
+import { LinkIcon } from "lucide-react"
 
 interface NavigationProps {
-  variant?: "app" | "marketing"
+  variant?: "default" | "minimal"
+  title?: string
 }
 
-export function Navigation({ variant = "app" }: NavigationProps) {
-  const router = useRouter()
+export function Navigation({ variant = "default", title }: NavigationProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [connectionPercentage, setConnectionPercentage] = useState(0)
   const pathname = usePathname()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  const isActive = (path: string) => {
-    if (path === "/dashboard") return pathname === "/dashboard"
-    return pathname.startsWith(path)
+  useEffect(() => {
+    const connectedIntegrations = 0
+    const totalIntegrations = 8
+    setConnectionPercentage(Math.round((connectedIntegrations / totalIntegrations) * 100))
+  }, [])
+
+  const getIntegrationColor = (percentage: number) => {
+    if (percentage === 0) return "text-gray-400"
+    if (percentage < 40) return "text-red-500"
+    if (percentage < 70) return "text-yellow-500"
+    return "text-green-500"
   }
 
-  const navigationItems = [
+  const mainNavItems = [
     {
-      label: "Dashboard",
+      title: "Dashboard",
       href: "/dashboard",
-      icon: BarChart3,
-      active: isActive("/dashboard"),
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
+      ),
     },
     {
-      label: "Profile",
+      title: "Profile",
       href: "/profile",
-      icon: Users,
-      active: isActive("/profile"),
-      submenu: [
-        { label: "Overview", href: "/profile" },
-        { label: "Smart Profile", href: "/profile/smart-profile" },
-        { label: "Reviews", href: "/profile/reviews" },
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      ),
+      subItems: [
+        { title: "Smart Profile", href: "/profile/smart-profile" },
+        { title: "Social Profile", href: "/profile/social-profile" },
+        { title: "Menu Builder", href: "/profile/menu-builder" },
+        { title: "Reviews", href: "/profile/reviews" },
+        { title: "Integrations", href: "/profile/integrations" },
       ],
     },
     {
-      label: "Marketing",
+      title: "Marketing",
       href: "/marketing",
-      icon: TrendingUp,
-      active: isActive("/marketing"),
-      submenu: [
-        { label: "Marketing Hub", href: "/marketing" },
-        { label: "Content Marketing", href: "/marketing/content" },
-        { label: "Performance Marketing", href: "/marketing/performance" },
-        { label: "Marketing Calendar", href: "/marketing/calendar" },
-        { label: "AI Content Creation", href: "/marketing/ai-content" },
-        { label: "Social Media", href: "/marketing/content/social-media" },
-        { label: "Blog Articles", href: "/marketing/content/blog" },
-        { label: "Campaigns", href: "/marketing/campaigns" },
-        { label: "Strategies", href: "/marketing/strategies" },
-        { label: "Offers & Promotions", href: "/marketing/offers" },
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+      subItems: [
+        { title: "Campaigns", href: "/marketing/campaigns" },
+        { title: "Content", href: "/marketing/content" },
+        { title: "Calendar", href: "/marketing/calendar" },
+        { title: "Analytics", href: "/marketing/analytics" },
       ],
     },
     {
-      label: "Customers",
+      title: "Customers",
       href: "/customers",
-      icon: Users,
-      active: isActive("/customers"),
-      submenu: [
-        { label: "Customer Hub", href: "/customers" },
-        { label: "Segmentation", href: "/customers/segmentation" },
-        { label: "Churn Management", href: "/customers/churn" },
-        { label: "Customer Profiles", href: "/customers/profiles" },
-        { label: "AI Insights", href: "/customers/insights" },
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+          />
+        </svg>
+      ),
+      subItems: [
+        { title: "Profiles", href: "/customers/profiles" },
+        { title: "Segmentation", href: "/customers/segmentation" },
+        { title: "Insights", href: "/customers/insights" },
+        { title: "Churn Analysis", href: "/customers/churn" },
       ],
-    },
-    {
-      label: "Integrations",
-      href: "/integrations",
-      icon: Globe,
-      active: isActive("/integrations"),
     },
   ]
 
-  if (variant === "marketing") {
+  if (variant === "minimal") {
     return (
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <nav className="border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Logo size="md" onClick={() => router.push("/")} className="cursor-pointer" />
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">
-                Features
-              </a>
-              <a href="#modules" className="text-slate-600 hover:text-slate-900 transition-colors">
-                Modules
-              </a>
-              <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">
-                Pricing
-              </a>
-              <a href="#testimonials" className="text-slate-600 hover:text-slate-900 transition-colors">
-                Reviews
-              </a>
-              <Button variant="ghost" onClick={() => router.push("/blog")}>
-                Blog
-              </Button>
-            </nav>
-
-            <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => router.push("/auth/login")}>
-                Sign In
-              </Button>
-              <Button onClick={() => router.push("/auth/signup")} className="bg-slate-900 hover:bg-slate-800">
-                Get Started
-              </Button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
-          </div>
-
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-slate-200">
-              <nav className="flex flex-col space-y-4">
-                <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Features
-                </a>
-                <a href="#modules" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Modules
-                </a>
-                <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Pricing
-                </a>
-                <a href="#testimonials" className="text-slate-600 hover:text-slate-900 transition-colors">
-                  Reviews
-                </a>
-                <Button variant="ghost" onClick={() => router.push("/blog")} className="justify-start">
-                  Blog
-                </Button>
-                <div className="flex flex-col space-y-2 pt-4">
-                  <Button variant="ghost" onClick={() => router.push("/auth/login")}>
-                    Sign In
-                  </Button>
-                  <Button onClick={() => router.push("/auth/signup")} className="bg-slate-900 hover:bg-slate-800">
-                    Get Started
-                  </Button>
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <Link href="/dashboard" className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                    />
+                  </svg>
                 </div>
-              </nav>
+                <span className="font-semibold text-gray-900">TableSalt AI</span>
+              </Link>
+              {title && (
+                <>
+                  <span className="text-gray-400">/</span>
+                  <span className="text-gray-600 font-medium">{title}</span>
+                </>
+              )}
             </div>
-          )}
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
+                <LinkIcon className="w-4 h-4 text-gray-400" />
+                <span className={`text-sm font-medium ${getIntegrationColor(connectionPercentage)}`}>
+                  {connectionPercentage}%
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </header>
+      </nav>
     )
   }
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
-            <Logo size="md" onClick={() => router.push("/dashboard")} className="cursor-pointer" />
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <Link href="/dashboard" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                  />
+                </svg>
+              </div>
+              <span className="font-semibold text-gray-900">TableSalt AI</span>
+            </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {navigationItems.map((item) => (
-              <div key={item.href}>
-                {item.submenu ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className={`rounded-md ${item.active ? "text-slate-900 font-medium bg-slate-100" : "text-slate-500"}`}
-                      >
-                        <item.icon className="w-4 h-4 mr-2" />
-                        {item.label}
-                        <ChevronDown className="w-4 h-4 ml-1" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
-                      <DropdownMenuLabel>{item.label}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {item.submenu.map((subItem) => (
-                        <DropdownMenuItem
-                          key={subItem.href}
-                          onClick={() => router.push(subItem.href)}
-                          className="cursor-pointer"
-                        >
-                          {subItem.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
+          <div className="hidden md:flex items-center space-x-1">
+            {mainNavItems.map((item) => {
+              const isActive = pathname.startsWith(item.href)
+
+              return (
+                <Link key={item.title} href={item.href}>
                   <Button
                     variant="ghost"
-                    className={`rounded-md ${item.active ? "text-slate-900 font-medium bg-slate-100" : "text-slate-500"}`}
-                    onClick={() => router.push(item.href)}
+                    className={`flex items-center space-x-2 text-sm ${
+                      isActive ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:text-gray-900"
+                    }`}
                   >
-                    <item.icon className="w-4 h-4 mr-2" />
-                    {item.label}
+                    {item.icon}
+                    <span>{item.title}</span>
                   </Button>
-                )}
-              </div>
-            ))}
-          </nav>
-
-          {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="rounded-md">
-              <Search className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-md relative">
-              <Bell className="w-5 h-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 text-white text-xs">
-                3
-              </Badge>
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-md">
-                  <User className="w-4 h-4 mr-2" />
-                  Account
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Spice Garden Restaurant</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
-                  <User className="w-4 h-4 mr-2" />
-                  Profile Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Account Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/auth/login")} className="cursor-pointer text-red-600">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </Link>
+              )
+            })}
           </div>
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden rounded-md"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          <div className="hidden md:flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <LinkIcon className="w-4 h-4 text-gray-400" />
+              <span className={`text-sm font-medium ${getIntegrationColor(connectionPercentage)}`}>
+                {connectionPercentage}%
+              </span>
+            </div>
+            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </Button>
+          </div>
+
+          <div className="md:hidden">
+            <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              {isMobileMenuOpen ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </Button>
+          </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-slate-200">
-            <nav className="flex flex-col space-y-2">
-              {navigationItems.map((item) => (
-                <div key={item.href}>
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start rounded-md ${item.active ? "text-slate-900 font-medium bg-slate-100" : "text-slate-500"}`}
-                    onClick={() => {
-                      router.push(item.href)
-                      setIsMenuOpen(false)
-                    }}
-                  >
-                    <item.icon className="w-4 h-4 mr-2" />
-                    {item.label}
-                  </Button>
-                  {item.submenu && item.active && (
-                    <div className="ml-6 mt-2 space-y-1">
-                      {item.submenu.map((subItem) => (
-                        <Button
-                          key={subItem.href}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start text-slate-600"
-                          onClick={() => {
-                            router.push(subItem.href)
-                            setIsMenuOpen(false)
-                          }}
-                        >
-                          {subItem.label}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 py-4">
+            <div className="space-y-2">
+              {mainNavItems.map((item) => {
+                const isActive = pathname.startsWith(item.href)
+
+                return (
+                  <div key={item.title}>
+                    <Link href={item.href}>
+                      <Button
+                        variant="ghost"
+                        className={`w-full justify-start ${isActive ? "bg-gray-100 text-gray-900" : "text-gray-600"}`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <span className="mr-2">{item.icon}</span>
+                        {item.title}
+                      </Button>
+                    </Link>
+                    {item.subItems && isActive && (
+                      <div className="ml-6 mt-1 space-y-1">
+                        {item.subItems.map((subItem) => (
+                          <Link key={subItem.href} href={subItem.href}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start text-gray-500 hover:text-gray-900"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              {subItem.title}
+                            </Button>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-center space-x-2">
+                  <LinkIcon className="w-4 h-4 text-gray-400" />
+                  <span className={`text-sm font-medium ${getIntegrationColor(connectionPercentage)}`}>
+                    {connectionPercentage}%
+                  </span>
                 </div>
-              ))}
-              <div className="pt-4 border-t border-slate-200 space-y-2">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-slate-600"
-                  onClick={() => router.push("/settings")}
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-red-600"
-                  onClick={() => router.push("/auth/login")}
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
               </div>
-            </nav>
+            </div>
           </div>
         )}
       </div>
-    </header>
+    </nav>
   )
 }

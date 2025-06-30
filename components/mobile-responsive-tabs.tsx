@@ -1,86 +1,104 @@
 "use client"
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import type React from "react"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
+interface Tab {
+  id: string
+  label: string
+  content: React.ReactNode
+}
 
 interface MobileResponsiveTabsProps {
-  children: React.ReactNode
+  tabs: Tab[]
+  defaultTab?: string
   className?: string
 }
 
-export function MobileResponsiveTabs({ children, className }: MobileResponsiveTabsProps) {
-  const tabsRef = React.useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
-  const [canScrollRight, setCanScrollRight] = React.useState(false)
+export function MobileResponsiveTabs({ tabs, defaultTab, className = "" }: MobileResponsiveTabsProps) {
+  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id || "")
+  const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
+  const currentTab = tabs[currentIndex]
 
-  const checkForScrollPosition = () => {
-    if (!tabsRef.current) return
-
-    const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current
-    setCanScrollLeft(scrollLeft > 0)
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
-  }
-
-  React.useEffect(() => {
-    const tabsElement = tabsRef.current
-    if (!tabsElement) return
-
-    checkForScrollPosition()
-
-    const observer = new ResizeObserver(() => {
-      checkForScrollPosition()
-    })
-
-    observer.observe(tabsElement)
-    tabsElement.addEventListener("scroll", checkForScrollPosition)
-
-    return () => {
-      observer.disconnect()
-      tabsElement.removeEventListener("scroll", checkForScrollPosition)
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1].id)
     }
-  }, [])
-
-  const scrollLeft = () => {
-    if (!tabsRef.current) return
-    tabsRef.current.scrollBy({ left: -200, behavior: "smooth" })
   }
 
-  const scrollRight = () => {
-    if (!tabsRef.current) return
-    tabsRef.current.scrollBy({ left: 200, behavior: "smooth" })
+  const handleNext = () => {
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1].id)
+    }
   }
 
   return (
-    <div className="relative">
-      <div ref={tabsRef} className={cn("flex overflow-x-auto scrollbar-hide scroll-smooth", className)}>
-        {children}
+    <div className={`w-full ${className}`}>
+      {/* Desktop Tabs */}
+      <div className="hidden md:block">
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 px-6">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? "border-black text-black"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div className="p-6">{currentTab?.content}</div>
       </div>
 
-      {canScrollLeft && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-white shadow-md border-slate-200"
-          onClick={scrollLeft}
-          aria-label="Scroll tabs left"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-      )}
+      {/* Mobile Tabs */}
+      <div className="md:hidden">
+        {/* Tab Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+          <Button variant="ghost" size="sm" onClick={handlePrevious} disabled={currentIndex === 0} className="p-2">
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
 
-      {canScrollRight && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-white shadow-md border-slate-200"
-          onClick={scrollRight}
-          aria-label="Scroll tabs right"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      )}
+          <div className="text-center">
+            <h3 className="font-medium text-black">{currentTab?.label}</h3>
+            <p className="text-xs text-gray-500">
+              {currentIndex + 1} of {tabs.length}
+            </p>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleNext}
+            disabled={currentIndex === tabs.length - 1}
+            className="p-2"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-4">{currentTab?.content}</div>
+
+        {/* Tab Indicators */}
+        <div className="flex justify-center space-x-2 p-4 border-t border-gray-200">
+          {tabs.map((tab, index) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-2 h-2 rounded-full transition-colors ${activeTab === tab.id ? "bg-black" : "bg-gray-300"}`}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

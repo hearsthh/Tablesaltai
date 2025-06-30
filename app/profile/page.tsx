@@ -1,601 +1,451 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Switch } from "@/components/ui/switch"
-import { useRouter } from "next/navigation"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Navigation } from "@/components/navigation"
+import { Badge } from "@/components/ui/badge"
 import {
-  TrendingUp,
-  Globe,
-  ChefHat,
-  MessageSquare,
-  Star,
-  Eye,
+  Building,
   ArrowRight,
   CheckCircle,
   Clock,
-  AlertCircle,
-  BarChart3,
-  Calendar,
-  MapPin,
-  Phone,
-  Mail,
-  ChevronDown,
-  ChevronUp,
+  MessageSquare,
+  MenuIcon,
+  Sparkles,
+  Users,
+  TrendingUp,
   Settings,
-  Link,
-  ExternalLink,
+  Wifi,
 } from "lucide-react"
 
-export default function ProfileDashboard() {
+export default function ProfilePage() {
   const router = useRouter()
-  const [completionPercentage] = useState(65)
-  const [setupExpanded, setSetupExpanded] = useState(false)
-  const [integrationsExpanded, setIntegrationsExpanded] = useState(false)
-  const [integrationToggles, setIntegrationToggles] = useState({
-    google: true,
-    zomato: false,
-    tripadvisor: true,
-    swiggy: false,
-  })
+  const searchParams = useSearchParams()
+  const isOnboarding = searchParams.get("onboarding") === "true"
+  const isNewUser = searchParams.get("new") === "true"
 
-  const setupSteps = [
-    {
-      id: 1,
-      title: "Restaurant Information",
-      description: "Basic details about your restaurant",
-      status: "completed",
-      icon: MapPin,
-      href: "/profile/smart-profile",
-    },
-    {
-      id: 2,
-      title: "Brand Assets",
-      description: "Logo, colors, and brand voice",
-      status: "completed",
-      icon: Star,
-      href: "/profile/smart-profile",
-    },
-    {
-      id: 3,
-      title: "Media Assets",
-      description: "Photos and videos of your restaurant",
-      status: "pending",
-      icon: Eye,
-      href: "/profile/smart-profile",
-    },
-  ]
+  const [overallProgress, setOverallProgress] = useState(0)
+  const [integrationProgress] = useState(65) // Mock integration percentage
 
-  const profileAssets = [
+  // Profile modules with clear user flow
+  const profileModules = [
     {
-      title: "Smart Profile",
-      description: "AI-generated restaurant website",
-      status: "live",
-      statusColor: "bg-emerald-100 text-emerald-700",
-      metric: "2,847 views",
-      icon: Globe,
-      href: "/profile/smart-profile",
-      color: "bg-blue-50 border-blue-200",
+      id: "social-profile",
+      title: "Social Profile",
+      description: "Create your restaurant's brand identity and social presence",
+      icon: Building,
+      status: "available",
+      progress: isNewUser ? 0 : 85,
+      route: "/profile/social-profile",
+      priority: 1,
+      estimatedTime: "20-30 min",
+      features: ["Basic Info", "Brand Assets", "Profile Content", "Features"],
+      isRequired: true,
+      userFlowStep: 1,
     },
     {
-      title: "Menu Builder",
-      description: "Digital menu management",
-      status: "active",
-      statusColor: "bg-blue-100 text-blue-700",
-      metric: "24 items",
-      icon: ChefHat,
-      href: "/profile/menu-builder",
-      color: "bg-orange-50 border-orange-200",
+      id: "menu-builder",
+      title: "Menu Manager",
+      description: "Build and manage your digital menu with AI-powered insights",
+      icon: MenuIcon,
+      status: "available",
+      progress: isNewUser ? 0 : 60,
+      route: "/profile/menu-builder",
+      priority: 2,
+      estimatedTime: "15-25 min",
+      features: ["Menu Items", "Categories", "Pricing", "AI Descriptions"],
+      isRequired: true,
+      userFlowStep: 2,
     },
     {
-      title: "WhatsApp Card",
-      description: "Business card for WhatsApp",
-      status: "setup",
-      statusColor: "bg-amber-100 text-amber-700",
-      metric: "60% complete",
+      id: "reviews",
+      title: "Review Manager",
+      description: "Monitor and manage customer reviews with AI automation",
       icon: MessageSquare,
-      href: "/profile/whatsapp-card",
-      color: "bg-green-50 border-green-200",
-    },
-    {
-      title: "Reviews Manager",
-      description: "Manage reviews from all platforms",
-      status: "active",
-      statusColor: "bg-purple-100 text-purple-700",
-      metric: "156 reviews",
-      icon: Star,
-      href: "/profile/reviews",
-      color: "bg-purple-50 border-purple-200",
+      status: "available",
+      progress: isNewUser ? 0 : 40,
+      route: "/profile/reviews",
+      priority: 3,
+      estimatedTime: "10-15 min",
+      features: ["Review Sync", "AI Responses", "Sentiment Analysis", "Insights"],
+      isRequired: false,
+      userFlowStep: 3,
     },
   ]
 
-  const quickStats = [
-    {
-      title: "Website Views",
-      value: "2,847",
-      change: "+12%",
-      changeType: "positive",
-      icon: Eye,
-      color: "bg-blue-50 text-blue-700",
-    },
-    {
-      title: "Menu Items",
-      value: "24",
-      change: "+3",
-      changeType: "positive",
-      icon: ChefHat,
-      color: "bg-orange-50 text-orange-700",
-    },
-    {
-      title: "Avg. Rating",
-      value: "4.6",
-      change: "+0.2",
-      changeType: "positive",
-      icon: Star,
-      color: "bg-amber-50 text-amber-700",
-    },
-    {
-      title: "Total Reviews",
-      value: "156",
-      change: "+8",
-      changeType: "positive",
-      icon: MessageSquare,
-      color: "bg-purple-50 text-purple-700",
-    },
-  ]
-
-  const recentActivity = [
-    {
-      action: "New review received",
-      platform: "Google My Business",
-      time: "2 hours ago",
-      rating: 5,
-      type: "review",
-    },
-    {
-      action: "Menu item updated",
-      platform: "Menu Builder",
-      time: "5 hours ago",
-      item: "Chicken Tikka",
-      type: "menu",
-    },
-    {
-      action: "Profile viewed",
-      platform: "Smart Profile",
-      time: "1 day ago",
-      views: 23,
-      type: "view",
-    },
-    {
-      action: "WhatsApp card shared",
-      platform: "WhatsApp Business",
-      time: "2 days ago",
-      shares: 5,
-      type: "share",
-    },
-    {
-      action: "Review responded",
-      platform: "TripAdvisor",
-      time: "3 days ago",
-      type: "review",
-    },
-  ]
-
-  const platformIntegrations = [
-    {
-      id: "google",
-      name: "Google My Business",
-      status: "connected",
-      icon: "🏢",
-      enabled: integrationToggles.google,
-    },
-    {
-      id: "zomato",
-      name: "Zomato",
-      status: "disconnected",
-      icon: "🍽️",
-      enabled: integrationToggles.zomato,
-    },
-    {
-      id: "tripadvisor",
-      name: "TripAdvisor",
-      status: "connected",
-      icon: "✈️",
-      enabled: integrationToggles.tripadvisor,
-    },
-    {
-      id: "swiggy",
-      name: "Swiggy",
-      status: "disconnected",
-      icon: "🛵",
-      enabled: integrationToggles.swiggy,
-    },
-  ]
-
-  const connectedCount = platformIntegrations.filter((p) => p.status === "connected").length
+  // Calculate overall progress
+  useEffect(() => {
+    if (isNewUser) {
+      setOverallProgress(0)
+    } else {
+      const totalProgress = profileModules.reduce((acc, module) => acc + module.progress, 0)
+      const averageProgress = Math.round(totalProgress / profileModules.length)
+      setOverallProgress(averageProgress)
+    }
+  }, [isNewUser])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="w-5 h-5 text-emerald-600" />
-      case "pending":
-        return <Clock className="w-5 h-5 text-amber-600" />
+        return <CheckCircle className="w-4 h-4 text-green-600" />
+      case "in-progress":
+        return <Clock className="w-4 h-4 text-blue-600" />
+      case "ready":
+        return <Sparkles className="w-4 h-4 text-purple-600" />
+      case "locked":
+        return <Clock className="w-4 h-4 text-gray-400" />
       default:
-        return <AlertCircle className="w-5 h-5 text-gray-400" />
+        return <Clock className="w-4 h-4 text-gray-400" />
     }
   }
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "review":
-        return <Star className="w-4 h-4 text-amber-500" />
-      case "menu":
-        return <ChefHat className="w-4 h-4 text-orange-500" />
-      case "view":
-        return <Eye className="w-4 h-4 text-blue-500" />
-      case "share":
-        return <MessageSquare className="w-4 h-4 text-green-500" />
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-50 text-green-700 border-green-200"
+      case "in-progress":
+        return "bg-blue-50 text-blue-700 border-blue-200"
+      case "ready":
+        return "bg-purple-50 text-purple-700 border-purple-200"
+      case "locked":
+        return "bg-gray-50 text-gray-500 border-gray-200"
       default:
-        return <Clock className="w-4 h-4 text-gray-500" />
+        return "bg-gray-50 text-gray-500 border-gray-200"
     }
   }
 
-  const handleIntegrationToggle = (integrationId: string) => {
-    setIntegrationToggles((prev) => ({
-      ...prev,
-      [integrationId]: !prev[integrationId as keyof typeof prev],
-    }))
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "Completed"
+      case "in-progress":
+        return "In Progress"
+      case "ready":
+        return "Ready to Start"
+      case "locked":
+        return "Locked"
+      default:
+        return "Available"
+    }
   }
+
+  const handleModuleClick = (module: any) => {
+    const params = new URLSearchParams()
+    if (isOnboarding) params.set("onboarding", "true")
+    if (isNewUser) params.set("new", "true")
+
+    const url = `${module.route}${params.toString() ? "?" + params.toString() : ""}`
+    router.push(url)
+  }
+
+  const handleIntegrationsClick = () => {
+    const params = new URLSearchParams()
+    if (isOnboarding) params.set("onboarding", "true")
+    if (isNewUser) params.set("new", "true")
+
+    router.push(`/profile/integrations${params.toString() ? "?" + params.toString() : ""}`)
+  }
+
+  const getNextAvailableModule = () => {
+    return profileModules.find((module) => module.status === "ready" || module.status === "in-progress")
+  }
+
+  const nextModule = getNextAvailableModule()
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl font-bold text-slate-900">Restaurant Profile</h1>
-              <p className="text-slate-600 mt-2">Manage your restaurant's digital presence</p>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">T</span>
+              </div>
+              <span className="text-xl font-semibold text-gray-900">TableSalt</span>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+
+            <nav className="hidden sm:flex space-x-8">
               <Button
-                variant="outline"
-                className="flex items-center rounded-md border-slate-200"
-                onClick={() => router.push("/profile/smart-profile")}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                View Smart Profile
-              </Button>
-              <Button
-                className="flex items-center bg-slate-900 hover:bg-slate-800 rounded-md"
-                onClick={() => router.push("/marketing")}
+                variant="ghost"
+                className="text-gray-600 hover:text-gray-900"
+                onClick={() => router.push("/dashboard")}
               >
                 <TrendingUp className="w-4 h-4 mr-2" />
-                Marketing Hub
+                Dashboard
               </Button>
-            </div>
+              <Button
+                variant="ghost"
+                className="text-gray-600 hover:text-gray-900"
+                onClick={() => router.push("/marketing")}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Marketing
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-gray-600 hover:text-gray-900"
+                onClick={() => router.push("/customers")}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Customers
+              </Button>
+            </nav>
+
+            <Button variant="ghost" size="sm" className="sm:hidden">
+              <MenuIcon className="w-4 h-4" />
+            </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          {/* Onboarding Header */}
+          {isOnboarding && (
+            <div className="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Profile Manager Setup</h1>
+                  <p className="text-gray-600 mt-1">
+                    Complete these modules to set up your restaurant's digital foundation
+                  </p>
+                </div>
+                <Badge className="bg-gray-900 text-white">Profile Module</Badge>
+              </div>
+
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900">Overall Progress</span>
+                  <span className="text-sm text-gray-600">{overallProgress}%</span>
+                </div>
+                <Progress value={overallProgress} className="h-2 bg-gray-200" />
+              </div>
+
+              {nextModule && (
+                <div className="flex items-center justify-between p-4 bg-white rounded border border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <nextModule.icon className="w-5 h-5 text-gray-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Next: {nextModule.title}</p>
+                      <p className="text-sm text-gray-600">{nextModule.estimatedTime}</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => handleModuleClick(nextModule)}
+                    className="bg-gray-900 hover:bg-gray-800 text-white"
+                  >
+                    Continue
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Regular Header */}
+          {!isOnboarding && (
+            <div className="mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Profile Manager</h1>
+                  <p className="text-gray-600 mt-1">Manage your restaurant's digital presence</p>
+                </div>
+                <div className="mt-4 sm:mt-0 sm:ml-4 sm:w-64">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-900">Overall Progress</span>
+                    <span className="text-sm text-gray-600">{overallProgress}%</span>
+                  </div>
+                  <Progress value={overallProgress} className="h-2 bg-gray-200" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* 1. Performance Overview */}
-            <Card className="border-slate-200">
-              <CardHeader className="bg-slate-50 border-b border-slate-200">
-                <CardTitle className="flex items-center text-slate-900">
-                  <BarChart3 className="w-5 h-5 mr-2" />
-                  Performance Overview
-                </CardTitle>
-                <CardDescription>Key metrics for your restaurant profile</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {quickStats.map((stat, index) => (
-                    <div key={index} className={`p-4 rounded-lg border ${stat.color}`}>
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-8 h-8 rounded-md bg-white/50 flex items-center justify-center">
-                          <stat.icon className="w-4 h-4" />
-                        </div>
-                      </div>
-                      <div className="text-2xl font-bold text-slate-900">{stat.value}</div>
-                      <div className="text-sm text-slate-600">{stat.title}</div>
-                      <div className="text-xs text-emerald-600 font-medium">{stat.change} from last month</div>
+          {/* Module Cards */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Integration Status Card */}
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Wifi className="w-5 h-5 text-white" />
                     </div>
-                  ))}
+                    <div>
+                      <CardTitle className="text-lg text-blue-900">Platform Integrations</CardTitle>
+                      <CardDescription className="text-blue-700">
+                        Connect to Google My Business, Zomato, Swiggy and other platforms
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-blue-900">{integrationProgress}%</div>
+                      <div className="text-xs text-blue-700">Connected</div>
+                    </div>
+                    <Button
+                      onClick={handleIntegrationsClick}
+                      variant="outline"
+                      size="sm"
+                      className="border-blue-300 text-blue-700 hover:bg-blue-100 bg-transparent"
+                    >
+                      <Settings className="w-4 h-4 mr-1" />
+                      Manage
+                    </Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* 2. Profile Assets */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle>Profile Assets</CardTitle>
-                <CardDescription>Manage different aspects of your restaurant profile</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profileAssets.map((asset, index) => (
-                    <div
-                      key={index}
-                      className={`p-6 border rounded-lg hover:shadow-sm transition-all duration-200 cursor-pointer group ${asset.color}`}
-                      onClick={() => router.push(asset.href)}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-white/50 rounded-md flex items-center justify-center group-hover:bg-white/70 transition-colors">
-                            <asset.icon className="w-5 h-5 text-slate-700" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{asset.title}</h3>
-                            <p className="text-sm text-slate-600">{asset.description}</p>
-                          </div>
-                        </div>
-                        <Badge className={asset.statusColor} variant="secondary">
-                          {asset.status}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-slate-600">{asset.metric}</div>
-                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
-                      </div>
-                    </div>
-                  ))}
+                <div className="space-y-2">
+                  <Progress value={integrationProgress} className="h-2 bg-blue-200" />
+                  <p className="text-xs text-blue-700">
+                    {integrationProgress >= 50 ? "Good progress! " : ""}
+                    Connect more platforms to sync data automatically and improve your online presence.
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* 3. Recent Activities */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center">
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Recent Activities
-                    </CardTitle>
-                    <CardDescription>Latest updates across your restaurant profile</CardDescription>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-md border-slate-200"
-                    onClick={() => router.push("/profile/reviews")}
-                  >
-                    View All Activities
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 bg-slate-50 rounded-lg">
-                    <div className="flex-shrink-0 mt-1">{getActivityIcon(activity.type)}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900">{activity.action}</p>
-                      <p className="text-xs text-slate-500">{activity.platform}</p>
-                      <p className="text-xs text-slate-400">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            {profileModules.map((module, index) => {
+              const canAccess = true // Always allow access
 
-            {/* 4. Collapsible Setup Section */}
-            <Collapsible open={setupExpanded} onOpenChange={setSetupExpanded}>
-              <Card className="border-slate-200">
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-slate-50 transition-colors">
+              return (
+                <Card
+                  key={module.id}
+                  className={`border-gray-200 transition-all duration-200 hover:shadow-md cursor-pointer`}
+                  onClick={() => canAccess && handleModuleClick(module)}
+                >
+                  <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center">
-                          <Settings className="w-5 h-5 mr-2" />
-                          Profile Setup
-                        </CardTitle>
-                        <CardDescription>Complete your profile setup ({completionPercentage}% done)</CardDescription>
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <module.icon className="w-6 h-6 text-gray-600" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg text-gray-900 flex items-center">
+                            {module.title}
+                            {module.isRequired && <span className="text-red-500 ml-1">*</span>}
+                          </CardTitle>
+                          <CardDescription className="text-gray-600 mt-1">{module.description}</CardDescription>
+                        </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Progress value={completionPercentage} className="w-24 h-2" />
-                        {setupExpanded ? (
-                          <ChevronUp className="w-5 h-5 text-slate-400" />
-                        ) : (
-                          <ChevronDown className="w-5 h-5 text-slate-400" />
-                        )}
+                        {getStatusIcon(module.status)}
+                        <Badge className={`${getStatusColor(module.status)}`}>{getStatusText(module.status)}</Badge>
                       </div>
                     </div>
                   </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent className="pt-0">
-                    <div className="space-y-4">
-                      {setupSteps.map((step) => (
-                        <div
-                          key={step.id}
-                          className="flex items-center space-x-4 p-4 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-                          onClick={() => router.push(step.href)}
-                        >
-                          <div className="flex-shrink-0">{getStatusIcon(step.status)}</div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <h4 className="font-medium text-slate-900">{step.title}</h4>
-                              <Badge
-                                variant={step.status === "completed" ? "default" : "secondary"}
-                                className="text-xs"
-                              >
-                                {step.status === "completed" ? "Completed" : "Required"}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-slate-500">{step.description}</p>
-                          </div>
-                          <ArrowRight className="w-5 h-5 text-slate-400" />
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
 
-            {/* 5. Collapsible Platform Integrations */}
-            <Collapsible open={integrationsExpanded} onOpenChange={setIntegrationsExpanded}>
-              <Card className="border-slate-200">
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center">
-                          <Link className="w-5 h-5 mr-2" />
-                          Platform Integrations
-                        </CardTitle>
-                        <CardDescription>
-                          {connectedCount} of {platformIntegrations.length} platforms connected
-                        </CardDescription>
+                  <CardContent className="space-y-4">
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-900">Progress</span>
+                        <span className="text-sm text-gray-600">{module.progress}%</span>
                       </div>
-                      {integrationsExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-slate-400" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-slate-400" />
-                      )}
+                      <Progress value={module.progress} className="h-2 bg-gray-200" />
                     </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <CardContent className="pt-0">
-                    <div className="space-y-3">
-                      {platformIntegrations.map((platform) => (
-                        <div
-                          key={platform.id}
-                          className="flex items-center justify-between p-4 border border-slate-200 rounded-lg"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <span className="text-xl">{platform.icon}</span>
-                            <div>
-                              <span className="font-medium text-slate-900">{platform.name}</span>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <div
-                                  className={`w-2 h-2 rounded-full ${platform.status === "connected" ? "bg-emerald-500" : "bg-gray-300"}`}
-                                ></div>
-                                <span className="text-xs text-slate-500">
-                                  {platform.status === "connected" ? "Connected" : "Not connected"}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <Switch
-                              checked={platform.enabled}
-                              onCheckedChange={() => handleIntegrationToggle(platform.id)}
-                              disabled={platform.status !== "connected"}
-                              className="data-[state=checked]:bg-slate-900"
-                            />
-                            {platform.status === "disconnected" && (
-                              <Button size="sm" variant="outline" className="h-8 px-3 rounded-md border-slate-200">
-                                <ExternalLink className="w-3 h-3 mr-1" />
-                                Connect
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+
+                    {/* Features */}
+                    <div className="space-y-2">
+                      <span className="text-sm font-medium text-gray-900">Features</span>
+                      <div className="flex flex-wrap gap-2">
+                        {module.features.map((feature, featureIndex) => (
+                          <Badge key={featureIndex} variant="outline" className="text-xs border-gray-300 text-gray-700">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                      {module.status === "completed" ? "View & Edit" : "Get Started"}
+                    </Button>
+
+                    {/* Estimated Time */}
+                    <div className="text-center">
+                      <span className="text-sm text-gray-500">Estimated time: {module.estimatedTime}</span>
                     </div>
                   </CardContent>
-                </CollapsibleContent>
-              </Card>
-            </Collapsible>
-
-            {/* 6. Quick Actions */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto rounded-md border-slate-200"
-                  onClick={() => router.push("/profile/smart-profile")}
-                >
-                  <Eye className="w-5 h-5 mb-2" />
-                  <span className="text-sm">Edit Profile</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto rounded-md border-slate-200"
-                  onClick={() => router.push("/profile/menu-builder")}
-                >
-                  <ChefHat className="w-5 h-5 mb-2" />
-                  <span className="text-sm">Manage Menu</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto rounded-md border-slate-200"
-                  onClick={() => router.push("/profile/whatsapp-card")}
-                >
-                  <MessageSquare className="w-5 h-5 mb-2" />
-                  <span className="text-sm">WhatsApp Card</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex flex-col items-center p-4 h-auto rounded-md border-slate-200"
-                  onClick={() => router.push("/profile/reviews")}
-                >
-                  <BarChart3 className="w-5 h-5 mb-2" />
-                  <span className="text-sm">View Analytics</span>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* 7. Footer */}
-            <div className="text-center py-8 border-t border-slate-200">
-              <p className="text-sm text-slate-500">© 2024 TableSalt. All rights reserved.</p>
-              <div className="flex justify-center space-x-6 mt-2">
-                <Button variant="link" size="sm" className="text-slate-500 p-0 h-auto">
-                  Privacy Policy
-                </Button>
-                <Button variant="link" size="sm" className="text-slate-500 p-0 h-auto">
-                  Terms of Service
-                </Button>
-                <Button variant="link" size="sm" className="text-slate-500 p-0 h-auto">
-                  Support
-                </Button>
-              </div>
-            </div>
+                </Card>
+              )
+            })}
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Restaurant Info */}
-            <Card className="border-slate-200">
+          <div className="lg:col-span-1 space-y-6">
+            {/* Quick Stats */}
+            <Card className="border-gray-200">
               <CardHeader>
-                <CardTitle className="text-lg">Restaurant Info</CardTitle>
+                <CardTitle className="text-lg text-gray-900">Quick Stats</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <ChefHat className="w-8 h-8 text-orange-600" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {profileModules.filter((m) => m.status === "completed").length}
+                    </div>
+                    <div className="text-sm text-gray-600">Completed</div>
                   </div>
-                  <h3 className="font-semibold text-slate-900">Spice Garden</h3>
-                  <p className="text-sm text-slate-500">Authentic Indian Cuisine with Modern Flair</p>
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <div className="text-2xl font-bold text-gray-900">
+                      {profileModules.filter((m) => m.status === "in-progress" || m.status === "ready").length}
+                    </div>
+                    <div className="text-sm text-gray-600">Remaining</div>
+                  </div>
                 </div>
-                <div className="space-y-3 pt-4 border-t border-slate-200">
-                  <div className="flex items-center space-x-3 text-sm">
-                    <MapPin className="w-4 h-4 text-slate-400" />
-                    <span className="text-slate-600">Mumbai, Maharashtra</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-sm">
-                    <Phone className="w-4 h-4 text-slate-400" />
-                    <span className="text-slate-600">+91 98765 43210</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-sm">
-                    <Mail className="w-4 h-4 text-slate-400" />
-                    <span className="text-slate-600">info@spicegarden.com</span>
-                  </div>
+              </CardContent>
+            </Card>
+
+            {/* Setup Guide */}
+            <Card className="border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-900">Setup Guide</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  {profileModules.map((module, index) => (
+                    <div key={module.id} className="flex items-center space-x-3">
+                      <div
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                          module.status === "completed"
+                            ? "bg-green-100 text-green-700"
+                            : module.status === "ready" || module.status === "in-progress"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {module.status === "completed" ? <CheckCircle className="w-4 h-4" /> : <span>{index + 1}</span>}
+                      </div>
+                      <span className={`text-sm ${module.status === "completed" ? "text-green-700" : "text-gray-600"}`}>
+                        {module.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tips */}
+            <Card className="border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-900">💡 Tips</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2 text-sm text-gray-600">
+                  <p>• Connect platforms first to sync your data automatically</p>
+                  <p>• Use AI features to generate content automatically</p>
+                  <p>• Complete all required modules for best results</p>
+                  <p>• Review and update your profile regularly</p>
                 </div>
               </CardContent>
             </Card>

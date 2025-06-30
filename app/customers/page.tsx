@@ -17,6 +17,9 @@ import {
   Star,
   Calendar,
   MapPin,
+  TrendingUp,
+  Sparkles,
+  Brain,
 } from "lucide-react"
 import { useCustomerStore } from "@/lib/store/customer-store"
 import { Navigation } from "@/components/navigation"
@@ -62,32 +65,36 @@ export default function CustomersPage() {
 
   const quickActions = [
     {
-      title: "Customer Segmentation",
-      description: "Analyze and segment customers",
+      title: "AI Customer Segmentation",
+      description: "Smart segmentation with predictive analytics",
       icon: Target,
       href: "/customers/segmentation",
       color: "bg-blue-600 hover:bg-blue-700",
+      aiFeature: "94% Accuracy",
     },
     {
-      title: "Churn Management",
-      description: "Monitor customer lifecycle",
+      title: "Churn Prediction AI",
+      description: "Predict and prevent customer churn",
       icon: TrendingDown,
       href: "/customers/churn",
       color: "bg-green-600 hover:bg-green-700",
+      aiFeature: "60 Days Advance",
     },
     {
-      title: "Customer Profiles",
-      description: "View detailed customer insights",
+      title: "Smart Customer Profiles",
+      description: "AI-enhanced customer insights and recommendations",
       icon: Users,
       href: "/customers/profiles",
       color: "bg-purple-600 hover:bg-purple-700",
+      aiFeature: "Personalized",
     },
     {
-      title: "AI Insights",
-      description: "Get AI-powered recommendations",
+      title: "AI Insights Dashboard",
+      description: "Advanced analytics with growth recommendations",
       icon: BarChart3,
       href: "/customers/insights",
       color: "bg-orange-600 hover:bg-orange-700",
+      aiFeature: "Real-time",
     },
   ]
 
@@ -187,7 +194,7 @@ export default function CustomersPage() {
                       <metric.icon className="w-3 h-3 sm:w-4 sm:h-4" />
                     </div>
                   </div>
-                  <div className="text-lg sm:text-2xl font-bold text-slate-900">{metric.value}</div>
+                  <div className="text-base sm:text-lg lg:text-2xl font-bold text-slate-900">{metric.value}</div>
                   <div className="text-xs sm:text-sm text-slate-600 truncate">{metric.title}</div>
                   <div
                     className={`text-xs font-medium ${
@@ -201,6 +208,126 @@ export default function CustomersPage() {
             </Card>
           ))}
         </div>
+
+        {/* AI Customer Intelligence */}
+        <Card className="mb-6 sm:mb-8 border-slate-200 bg-gradient-to-r from-green-50 to-blue-50">
+          <CardHeader>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">AI Customer Intelligence</CardTitle>
+                <CardDescription>Advanced AI analytics to understand and grow your customer base</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-white rounded-lg border border-green-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Users className="w-5 h-5 text-green-600" />
+                  <span className="font-medium text-slate-900">Smart Segmentation</span>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">AI identifies 12 customer segments with 94% accuracy</p>
+                <div className="text-xs text-green-600 font-medium">+28% Revenue Impact</div>
+              </div>
+              <div className="p-4 bg-white rounded-lg border border-blue-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <AlertTriangle className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-slate-900">Churn Prediction</span>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">Predict customer churn 60 days in advance</p>
+                <div className="text-xs text-blue-600 font-medium">89% Accuracy</div>
+              </div>
+              <div className="p-4 bg-white rounded-lg border border-purple-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <DollarSign className="w-5 h-5 text-purple-600" />
+                  <span className="font-medium text-slate-900">LTV Forecasting</span>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">Predict customer lifetime value with AI models</p>
+                <div className="text-xs text-purple-600 font-medium">₹2.3L Avg LTV</div>
+              </div>
+              <div className="p-4 bg-white rounded-lg border border-orange-200">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Heart className="w-5 h-5 text-orange-600" />
+                  <span className="font-medium text-slate-900">Personalization</span>
+                </div>
+                <p className="text-sm text-slate-600 mb-3">AI-powered menu recommendations per customer</p>
+                <div className="text-xs text-orange-600 font-medium">+42% Order Value</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cross-Module Integration */}
+        <Card className="mb-6 sm:mb-8 border-slate-200 bg-gradient-to-r from-green-50 to-blue-50">
+          <CardHeader>
+            <CardTitle className="text-lg sm:text-xl">AI Module Integration</CardTitle>
+            <CardDescription className="text-sm sm:text-base">
+              Connect customer insights with your profile and marketing strategies
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="p-4 bg-white rounded-lg border border-green-200">
+                <div className="flex items-center space-x-3 mb-3">
+                  <Users className="w-5 h-5 text-green-600" />
+                  <h4 className="font-medium text-slate-900 text-sm sm:text-base">Profile Optimization</h4>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-4">
+                  Use customer preferences to optimize your menu and restaurant profile for better engagement.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs sm:text-sm"
+                    onClick={() => router.push("/profile/menu-builder")}
+                  >
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Optimize Menu
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-xs sm:text-sm"
+                    onClick={() => router.push("/profile/smart-profile")}
+                  >
+                    Update Profile
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg border border-blue-200">
+                <div className="flex items-center space-x-3 mb-3">
+                  <TrendingUp className="w-5 h-5 text-blue-600" />
+                  <h4 className="font-medium text-slate-900 text-sm sm:text-base">Targeted Marketing</h4>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-600 mb-4">
+                  Create personalized marketing campaigns based on customer segments and behavior patterns.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white text-xs sm:text-sm"
+                    onClick={() => router.push("/marketing/campaigns")}
+                  >
+                    <Brain className="w-3 h-3 mr-1" />
+                    Create Campaign
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-xs sm:text-sm"
+                    onClick={() => router.push("/marketing/content")}
+                  >
+                    Generate Content
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Customer Segments Overview */}
         <Card className="mb-6 sm:mb-8 border-slate-200">

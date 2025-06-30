@@ -1,409 +1,195 @@
 "use client"
-
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { useRouter } from "next/navigation"
 import {
-  Users,
-  Globe,
   ArrowRight,
   BarChart3,
-  DollarSign,
   Eye,
-  Heart,
-  MessageSquare,
   Target,
-  PenTool,
   Calendar,
+  PenTool,
   Zap,
   Instagram,
   Facebook,
+  Youtube,
+  Globe,
+  Mail,
+  Settings,
+  TrendingUp,
   Clock,
-  CheckCircle,
-  Megaphone,
-  Lightbulb,
+  Users,
+  Sparkles,
+  Brain,
 } from "lucide-react"
 import { Navigation } from "@/components/navigation"
 
 export default function MarketingHubPage() {
   const router = useRouter()
-  const [monthlyBudget] = useState(25000)
-  const [budgetUsed] = useState(18500)
-  const budgetPercentage = (budgetUsed / monthlyBudget) * 100
 
-  const performanceOverview = [
-    {
-      title: "Total Reach",
-      value: "12.5K",
-      change: "+18%",
-      changeType: "positive",
-      icon: Eye,
-      color: "bg-blue-50 text-blue-700",
-    },
-    {
-      title: "Engagement Rate",
-      value: "4.2%",
-      change: "+0.8%",
-      changeType: "positive",
-      icon: Heart,
-      color: "bg-pink-50 text-pink-700",
-    },
-    {
-      title: "Active Campaigns",
-      value: "8",
-      change: "+2",
-      changeType: "positive",
-      icon: Target,
-      color: "bg-green-50 text-green-700",
-    },
-    {
-      title: "Content Published",
-      value: "24",
-      change: "+6",
-      changeType: "positive",
-      icon: PenTool,
-      color: "bg-purple-50 text-purple-700",
-    },
+  const keyMetrics = [
+    { title: "Active Campaigns", value: "12", change: "+3", icon: Target, color: "text-blue-600" },
+    { title: "Content Published", value: "48", change: "+12", icon: PenTool, color: "text-green-600" },
+    { title: "Scheduled Posts", value: "24", change: "+8", icon: Clock, color: "text-purple-600" },
+    { title: "Total Reach", value: "15.2K", change: "+18%", icon: Eye, color: "text-orange-600" },
   ]
 
-  const marketingModules = [
+  const marketingSections = [
     {
-      title: "Content Marketing",
-      description: "Social media strategy, blog content, and SEO optimization",
-      icon: PenTool,
+      title: "Campaigns",
+      description: "Create and manage paid & organic marketing campaigns across all channels",
+      icon: Target,
+      href: "/marketing/campaigns",
+      stats: {
+        active: "8 Active",
+        budget: "₹25K Budget",
+        roi: "+35% ROI",
+      },
       color: "bg-blue-50 border-blue-200",
       iconColor: "text-blue-600",
-      stats: {
-        strategies: "2 Active",
-        content: "24 Published",
-        platforms: "5 Connected",
-      },
-      href: "/marketing/content",
-      status: "active",
+      features: ["Multi-channel campaigns", "Budget tracking", "Performance analytics", "A/B testing"],
     },
     {
-      title: "Performance Marketing",
-      description: "Campaigns, strategies, offers, and performance analytics",
-      icon: Target,
+      title: "Content",
+      description: "Create, manage and organize all your marketing content with AI assistance",
+      icon: PenTool,
+      href: "/marketing/content",
+      stats: {
+        posts: "156 Posts",
+        videos: "24 Videos",
+        articles: "12 Articles",
+      },
       color: "bg-green-50 border-green-200",
       iconColor: "text-green-600",
-      stats: {
-        campaigns: "8 Active",
-        budget: "₹18.5K Spent",
-        roi: "+24% ROI",
-      },
-      href: "/marketing/performance",
-      status: "active",
+      features: ["AI content generation", "Multi-format support", "Brand consistency", "Content library"],
     },
     {
-      title: "Marketing Calendar",
-      description: "Schedule and plan all marketing activities and campaigns",
+      title: "Calendar",
+      description: "Schedule and auto-publish content across all marketing channels",
       icon: Calendar,
+      href: "/marketing/calendar",
+      stats: {
+        scheduled: "32 Scheduled",
+        published: "18 Published",
+        channels: "6 Channels",
+      },
       color: "bg-purple-50 border-purple-200",
       iconColor: "text-purple-600",
-      stats: {
-        scheduled: "12 Events",
-        thisWeek: "4 This Week",
-        upcoming: "8 Upcoming",
-      },
-      href: "/marketing/calendar",
-      status: "active",
-    },
-    {
-      title: "AI Content Creation",
-      description: "Generate posts, articles, visuals, and video content with AI",
-      icon: Zap,
-      color: "bg-orange-50 border-orange-200",
-      iconColor: "text-orange-600",
-      stats: {
-        generated: "156 Items",
-        templates: "12 Templates",
-        saved: "45 Drafts",
-      },
-      href: "/marketing/ai-content",
-      status: "active",
+      features: ["Auto-scheduling", "Multi-channel publishing", "Content planning", "Team collaboration"],
     },
   ]
 
-  const recentActivities = [
+  const connectedChannels = [
+    { name: "Instagram", icon: Instagram, status: "connected", followers: "2.4K", color: "text-pink-600" },
+    { name: "Facebook", icon: Facebook, status: "connected", followers: "1.8K", color: "text-blue-600" },
+    { name: "YouTube", icon: Youtube, status: "connected", followers: "856", color: "text-red-600" },
+    { name: "Google My Business", icon: Globe, status: "connected", followers: "324", color: "text-green-600" },
+    { name: "Email Marketing", icon: Mail, status: "connected", followers: "1.2K", color: "text-purple-600" },
+    { name: "WhatsApp Business", icon: Settings, status: "pending", followers: "0", color: "text-gray-400" },
+  ]
+
+  const marketingStrategies = [
     {
-      title: "Instagram Reel - Weekend Special",
-      type: "content",
-      date: "Today, 6:00 PM",
-      platform: "Instagram",
-      status: "scheduled",
-      module: "Content Marketing",
-    },
-    {
-      title: "Diwali Campaign Performance",
-      type: "campaign",
-      date: "2 hours ago",
-      platform: "Facebook",
+      name: "Social Media Growth",
       status: "active",
-      module: "Performance Marketing",
+      progress: 75,
+      description: "Increase followers and engagement across all social platforms",
+      nextMilestone: "Reach 5K Instagram followers",
     },
     {
-      title: "Blog Post - Healthy Indian Cuisine",
-      type: "content",
-      date: "Tomorrow, 10:00 AM",
-      platform: "Website",
-      status: "draft",
-      module: "Content Marketing",
+      name: "Local SEO Optimization",
+      status: "active",
+      progress: 60,
+      description: "Improve local search rankings and Google My Business presence",
+      nextMilestone: "Rank #1 for 'best restaurant near me'",
     },
     {
-      title: "AI Generated Social Posts",
-      type: "ai-content",
-      date: "1 day ago",
-      platform: "Multiple",
-      status: "completed",
-      module: "AI Content Creation",
-    },
-    {
-      title: "Email Newsletter Scheduled",
-      type: "campaign",
-      date: "Nov 10, 2024",
-      platform: "Email",
-      status: "scheduled",
-      module: "Performance Marketing",
+      name: "Customer Retention",
+      status: "planning",
+      progress: 25,
+      description: "Email marketing and loyalty program to retain existing customers",
+      nextMilestone: "Launch email newsletter campaign",
     },
   ]
-
-  const quickActions = [
-    {
-      title: "Generate Content",
-      description: "Create AI-powered social media posts",
-      icon: Zap,
-      href: "/marketing/ai-content",
-      color: "bg-blue-600 hover:bg-blue-700",
-    },
-    {
-      title: "Create Campaign",
-      description: "Launch new marketing campaign",
-      icon: Megaphone,
-      href: "/marketing/performance/campaigns",
-      color: "bg-green-600 hover:bg-green-700",
-    },
-    {
-      title: "Schedule Content",
-      description: "Plan upcoming posts and activities",
-      icon: Calendar,
-      href: "/marketing/calendar",
-      color: "bg-purple-600 hover:bg-purple-700",
-    },
-    {
-      title: "View Analytics",
-      description: "Check performance metrics",
-      icon: BarChart3,
-      href: "/marketing/performance/analytics",
-      color: "bg-orange-600 hover:bg-orange-700",
-    },
-  ]
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "active":
-      case "scheduled":
-      case "completed":
-        return <CheckCircle className="w-4 h-4 text-green-600" />
-      case "draft":
-        return <Clock className="w-4 h-4 text-amber-600" />
-      default:
-        return <Clock className="w-4 h-4 text-gray-400" />
-    }
-  }
-
-  const getPlatformIcon = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case "instagram":
-        return <Instagram className="w-4 h-4 text-pink-600" />
-      case "facebook":
-        return <Facebook className="w-4 h-4 text-blue-600" />
-      case "website":
-        return <Globe className="w-4 h-4 text-gray-600" />
-      case "email":
-        return <MessageSquare className="w-4 h-4 text-purple-600" />
-      case "multiple":
-        return <Zap className="w-4 h-4 text-orange-600" />
-      default:
-        return <Globe className="w-4 h-4 text-gray-600" />
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <Navigation />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* Page Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Marketing Hub</h1>
-              <p className="text-slate-600 mt-1 sm:mt-2 text-sm sm:text-base">
-                AI-powered marketing dashboard and strategy center
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button
-                variant="outline"
-                className="flex items-center rounded-md border-slate-200 text-sm"
-                onClick={() => router.push("/marketing/calendar")}
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Marketing Calendar</span>
-                <span className="sm:hidden">Calendar</span>
-              </Button>
-              <Button
-                className="flex items-center bg-slate-900 hover:bg-slate-800 rounded-md text-sm"
-                onClick={() => router.push("/marketing/ai-content")}
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">AI Content Creation</span>
-                <span className="sm:hidden">AI Content</span>
-              </Button>
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Marketing Hub</h1>
+          <p className="text-slate-600">Comprehensive marketing management for your restaurant</p>
         </div>
 
-        {/* Performance Overview - Mobile Responsive Grid */}
+        {/* Key Metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          {performanceOverview.map((stat, index) => (
+          {keyMetrics.map((metric, index) => (
             <Card key={index} className="border-slate-200">
               <CardContent className="p-3 sm:p-4">
-                <div className={`p-2 sm:p-3 rounded-lg ${stat.color}`}>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-white/50 flex items-center justify-center">
-                      <stat.icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </div>
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <metric.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${metric.color}`} />
                   </div>
-                  <div className="text-lg sm:text-2xl font-bold text-slate-900">{stat.value}</div>
-                  <div className="text-xs sm:text-sm text-slate-600 truncate">{stat.title}</div>
-                  <div className="text-xs text-emerald-600 font-medium">{stat.change}</div>
+                  <div className="min-w-0">
+                    <div className="text-lg sm:text-xl font-bold text-slate-900 truncate">{metric.value}</div>
+                    <div className="text-xs sm:text-sm text-slate-600 truncate">{metric.title}</div>
+                    <div className="text-xs text-green-600 font-medium">{metric.change}</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Budget Overview - Mobile Optimized */}
-        <Card className="mb-6 sm:mb-8 border-slate-200">
-          <CardHeader className="pb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-              <div>
-                <CardTitle className="flex items-center text-lg sm:text-xl">
-                  <DollarSign className="w-5 h-5 mr-2" />
-                  Marketing Budget Overview
-                </CardTitle>
-                <CardDescription className="text-sm">Monthly budget allocation and performance</CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-md border-slate-200 self-start sm:self-auto"
-                onClick={() => router.push("/marketing/performance/budget")}
-              >
-                Manage Budget
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700">Monthly Budget</span>
-                  <span className="text-lg font-bold text-slate-900">₹{monthlyBudget.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-500">Used</span>
-                  <span className="text-sm font-medium text-slate-700">₹{budgetUsed.toLocaleString()}</span>
-                </div>
-                <Progress value={budgetPercentage} className="h-2" />
-                <div className="text-xs text-slate-500">{Math.round(budgetPercentage)}% of budget used</div>
-              </div>
-              <div className="space-y-3">
-                <h4 className="font-medium text-slate-900">Top Performing</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Social Media Ads</span>
-                    <span className="font-medium text-green-600">+32% ROI</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Content Marketing</span>
-                    <span className="font-medium text-green-600">+28% Engagement</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Email Campaigns</span>
-                    <span className="font-medium text-green-600">+15% Conversion</span>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <h4 className="font-medium text-slate-900">This Month</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">New Customers</span>
-                    <span className="font-medium">+156</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Revenue Generated</span>
-                    <span className="font-medium">₹45.2K</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Cost per Lead</span>
-                    <span className="font-medium">₹125</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-            {/* Marketing Modules */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Marketing Sections */}
+          <div className="lg:col-span-2 space-y-8">
             <Card className="border-slate-200">
               <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Marketing Modules</CardTitle>
-                <CardDescription className="text-sm">
-                  Comprehensive marketing tools and AI-powered automation
-                </CardDescription>
+                <CardTitle className="text-xl">Marketing Sections</CardTitle>
+                <CardDescription>Choose a section to manage your marketing activities</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {marketingModules.map((module, index) => (
+                <div className="space-y-6">
+                  {marketingSections.map((section, index) => (
                     <div
                       key={index}
-                      className={`p-4 sm:p-6 border rounded-lg hover:shadow-sm transition-all duration-200 cursor-pointer group ${module.color}`}
-                      onClick={() => router.push(module.href)}
+                      className={`p-6 border rounded-lg hover:shadow-md transition-all cursor-pointer group ${section.color}`}
+                      onClick={() => router.push(section.href)}
                     >
                       <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-white/50 rounded-md flex items-center justify-center group-hover:bg-white/70 transition-colors">
-                            <module.icon className={`w-5 h-5 ${module.iconColor}`} />
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-white/70 rounded-lg flex items-center justify-center">
+                            <section.icon className={`w-6 h-6 ${section.iconColor}`} />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-slate-900">{module.title}</h3>
-                            <Badge className="bg-green-100 text-green-700 mt-1" variant="secondary">
-                              {module.status}
-                            </Badge>
+                            <h3 className="font-semibold text-slate-900 text-lg">{section.title}</h3>
+                            <p className="text-sm text-slate-600 mt-1">{section.description}</p>
                           </div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                        <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                       </div>
 
-                      <p className="text-sm text-slate-600 mb-4">{module.description}</p>
-
-                      <div className="space-y-2">
-                        {Object.entries(module.stats).map(([key, value], statIndex) => (
-                          <div key={statIndex} className="flex justify-between text-sm">
-                            <span className="text-slate-600 capitalize">{key.replace(/([A-Z])/g, " $1")}</span>
-                            <span className="font-medium text-slate-900">{value}</span>
+                      {/* Stats */}
+                      <div className="grid grid-cols-3 gap-4 mb-4">
+                        {Object.entries(section.stats).map(([key, value], statIndex) => (
+                          <div key={statIndex} className="text-center">
+                            <div className="text-sm font-medium text-slate-900">{value}</div>
+                            <div className="text-xs text-slate-600 capitalize">{key}</div>
                           </div>
+                        ))}
+                      </div>
+
+                      {/* Features */}
+                      <div className="flex flex-wrap gap-2">
+                        {section.features.map((feature, featureIndex) => (
+                          <Badge key={featureIndex} variant="secondary" className="text-xs">
+                            {feature}
+                          </Badge>
                         ))}
                       </div>
                     </div>
@@ -412,32 +198,119 @@ export default function MarketingHubPage() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
+            {/* Marketing Strategies */}
             <Card className="border-slate-200">
               <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
-                <CardDescription className="text-sm">Fast access to common marketing tasks</CardDescription>
+                <CardTitle className="text-xl flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2" />
+                  Marketing Strategies
+                </CardTitle>
+                <CardDescription>Overarching strategies for restaurant growth</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {quickActions.map((action, index) => (
-                    <div
-                      key={index}
-                      className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors group"
-                      onClick={() => router.push(action.href)}
-                    >
-                      <div className="flex items-center space-x-3 mb-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.color}`}>
-                          <action.icon className="w-5 h-5 text-white" />
+                <div className="space-y-4">
+                  {marketingStrategies.map((strategy, index) => (
+                    <div key={index} className="p-4 border border-slate-200 rounded-lg">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-medium text-slate-900">{strategy.name}</h4>
+                          <p className="text-sm text-slate-600 mt-1">{strategy.description}</p>
                         </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-slate-900">{action.title}</h4>
-                          <p className="text-sm text-slate-600">{action.description}</p>
+                        <Badge
+                          variant="secondary"
+                          className={
+                            strategy.status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }
+                        >
+                          {strategy.status}
+                        </Badge>
+                      </div>
+                      <div className="mb-3">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Progress</span>
+                          <span>{strategy.progress}%</span>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                        <Progress value={strategy.progress} className="h-2" />
+                      </div>
+                      <div className="text-sm text-slate-600">
+                        <span className="font-medium">Next milestone:</span> {strategy.nextMilestone}
                       </div>
                     </div>
                   ))}
+                </div>
+                <Button variant="outline" className="w-full mt-4">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Manage Strategies
+                </Button>
+              </CardContent>
+            </Card>
+            {/* Cross-Module Integration */}
+            <Card className="border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50 mb-6 sm:mb-8">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl">AI-Powered Module Integration</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Connect your marketing with profile data and customer insights
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="p-4 bg-white rounded-lg border border-blue-200">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Users className="w-5 h-5 text-blue-600" />
+                      <h4 className="font-medium text-slate-900 text-sm sm:text-base">Profile Integration</h4>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-600 mb-4">
+                      Use your restaurant profile and menu data to create personalized marketing content automatically.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs sm:text-sm"
+                        onClick={() => router.push("/profile/menu-builder")}
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Generate from Menu
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs sm:text-sm"
+                        onClick={() => router.push("/profile/smart-profile")}
+                      >
+                        Update Profile
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-lg border border-purple-200">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Target className="w-5 h-5 text-purple-600" />
+                      <h4 className="font-medium text-slate-900 text-sm sm:text-base">Customer Targeting</h4>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-600 mb-4">
+                      Target your marketing campaigns using AI customer segmentation and behavior analysis.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white text-xs sm:text-sm"
+                        onClick={() => router.push("/customers/segmentation")}
+                      >
+                        <Brain className="w-3 h-3 mr-1" />
+                        View Segments
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs sm:text-sm"
+                        onClick={() => router.push("/customers/profiles")}
+                      >
+                        Customer Insights
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -445,109 +318,110 @@ export default function MarketingHubPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Recent Activities */}
+            {/* Connected Channels */}
             <Card className="border-slate-200">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center">
-                  <Clock className="w-5 h-5 mr-2" />
-                  Recent Activities
+                  <Settings className="w-5 h-5 mr-2" />
+                  Marketing Channels
                 </CardTitle>
+                <CardDescription>Connected platforms and integrations</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {recentActivities.map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 bg-slate-50 rounded-lg">
-                    <div className="flex-shrink-0 mt-1">{getStatusIcon(activity.status)}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 break-words">{activity.title}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
-                        {getPlatformIcon(activity.platform)}
-                        <span className="text-xs text-slate-500">{activity.platform}</span>
-                        <span className="text-xs text-slate-400">•</span>
-                        <span className="text-xs text-slate-400">{activity.module}</span>
+              <CardContent>
+                <div className="space-y-3">
+                  {connectedChannels.map((channel, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <channel.icon className={`w-5 h-5 ${channel.color}`} />
+                        <div>
+                          <div className="font-medium text-sm text-slate-900">{channel.name}</div>
+                          <div className="text-xs text-slate-500">
+                            {channel.status === "connected" ? `${channel.followers} followers` : "Not connected"}
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-400">{activity.date}</p>
+                      <Badge
+                        variant="secondary"
+                        className={
+                          channel.status === "connected" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"
+                        }
+                      >
+                        {channel.status}
+                      </Badge>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <Button variant="outline" className="w-full mt-4">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Manage Integrations
+                </Button>
               </CardContent>
             </Card>
 
-            {/* AI Insights */}
+            {/* Quick Actions */}
             <Card className="border-slate-200">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <Lightbulb className="w-5 h-5 mr-2" />
-                  AI Insights
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900 text-sm">Optimization Tip</h4>
-                  <p className="text-xs text-blue-800 mt-1">
-                    Your Instagram posts perform 32% better when posted between 6-8 PM. Consider scheduling more content
-                    during this time.
-                  </p>
-                </div>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <h4 className="font-medium text-green-900 text-sm">Trending Content</h4>
-                  <p className="text-xs text-green-800 mt-1">
-                    Food photography posts are getting 45% more engagement this week. Focus on visual content.
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <h4 className="font-medium text-purple-900 text-sm">Budget Alert</h4>
-                  <p className="text-xs text-purple-800 mt-1">
-                    You're 74% through your monthly budget with 8 days remaining. Consider reallocating funds.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Module Navigation */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg">Module Navigation</CardTitle>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button
                   variant="outline"
-                  className="w-full justify-start rounded-md border-slate-200"
-                  onClick={() => router.push("/marketing/content")}
-                >
-                  <PenTool className="w-4 h-4 mr-2" />
-                  Content Marketing
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start rounded-md border-slate-200"
-                  onClick={() => router.push("/marketing/performance")}
+                  className="w-full justify-start"
+                  onClick={() => router.push("/marketing/campaigns/new")}
                 >
                   <Target className="w-4 h-4 mr-2" />
-                  Performance Marketing
+                  Create Campaign
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start rounded-md border-slate-200"
+                  className="w-full justify-start"
+                  onClick={() => router.push("/marketing/content/create")}
+                >
+                  <PenTool className="w-4 h-4 mr-2" />
+                  Create Content
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
                   onClick={() => router.push("/marketing/calendar")}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
-                  Marketing Calendar
+                  Schedule Post
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start rounded-md border-slate-200"
-                  onClick={() => router.push("/marketing/ai-content")}
+                  className="w-full justify-start"
+                  onClick={() => router.push("/marketing/analytics")}
                 >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  View Analytics
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* AI Assistant */}
+            <Card className="border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <Zap className="w-5 h-5 mr-2" />
+                  AI Assistant
+                </CardTitle>
+                <CardDescription>Get AI-powered marketing recommendations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="p-3 bg-white rounded-lg border border-blue-200">
+                    <h4 className="font-medium text-blue-900 text-sm mb-1">Content Suggestion</h4>
+                    <p className="text-xs text-blue-800">Create a Diwali special menu post for Instagram</p>
+                  </div>
+                  <div className="p-3 bg-white rounded-lg border border-green-200">
+                    <h4 className="font-medium text-green-900 text-sm mb-1">Campaign Opportunity</h4>
+                    <p className="text-xs text-green-800">Launch weekend brunch promotion campaign</p>
+                  </div>
+                </div>
+                <Button className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                   <Zap className="w-4 h-4 mr-2" />
-                  AI Content Creation
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start rounded-md border-slate-200"
-                  onClick={() => router.push("/profile")}
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Back to Profile
+                  Get AI Recommendations
                 </Button>
               </CardContent>
             </Card>

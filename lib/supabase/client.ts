@@ -1,39 +1,73 @@
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "@/types/supabase"
 
+// Check if Supabase is configured
+const isSupabaseConfigured = () => {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+}
+
+const isSupabaseServerConfigured = () => {
+  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+}
+
 // Browser client
 const createBrowserClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Supabase environment variables not configured")
-    // Return a mock client for development
+  if (!isSupabaseConfigured()) {
+    console.warn("Supabase browser environment variables not configured")
     return null
   }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
   return createClient<Database>(supabaseUrl, supabaseAnonKey)
 }
 
-// Server client function - EXPORTED
-export function getSupabaseServerClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    console.warn("Supabase server environment variables not configured")
-    // Return a mock client that won't break the build
-    return {
-      from: (table: string) => ({
-        select: (columns: string) => ({
-          eq: (column: string, value: any) => ({
-            single: async () => ({
-              data: null,
-              error: { message: "Supabase not configured" },
-            }),
+// Create a mock client for when Supabase is not configured
+const createMockClient = () => {
+  return {
+    auth: {
+      getUser: async () => ({
+        data: { user: null },
+        error: { message: "Supabase not configured" },
+      }),
+      signUp: async () => ({
+        data: { user: null },
+        error: { message: "Supabase not configured" },
+      }),
+      signInWithPassword: async () => ({
+        data: { user: null },
+        error: { message: "Supabase not configured" },
+      }),
+      signOut: async () => ({
+        error: { message: "Supabase not configured" },
+      }),
+      resetPasswordForEmail: async () => ({
+        error: { message: "Supabase not configured" },
+      }),
+      updateUser: async () => ({
+        error: { message: "Supabase not configured" },
+      }),
+    },
+    from: (table: string) => ({
+      select: (columns: string) => ({
+        eq: (column: string, value: any) => ({
+          single: async () => ({
+            data: null,
+            error: { message: "Supabase not configured" },
           }),
         }),
-        insert: (data: any) => ({
+      }),
+      insert: (data: any) => ({
+        select: () => ({
+          single: async () => ({
+            data: null,
+            error: { message: "Supabase not configured" },
+          }),
+        }),
+      }),
+      update: (data: any) => ({
+        eq: (column: string, value: any) => ({
           select: () => ({
             single: async () => ({
               data: null,
@@ -41,29 +75,30 @@ export function getSupabaseServerClient() {
             }),
           }),
         }),
-        update: (data: any) => ({
-          eq: (column: string, value: any) => ({
-            select: () => ({
-              single: async () => ({
-                data: null,
-                error: { message: "Supabase not configured" },
-              }),
-            }),
-          }),
-        }),
-        delete: () => ({
-          eq: (column: string, value: any) => ({
-            select: () => ({
-              single: async () => ({
-                data: null,
-                error: { message: "Supabase not configured" },
-              }),
+      }),
+      delete: () => ({
+        eq: (column: string, value: any) => ({
+          select: () => ({
+            single: async () => ({
+              data: null,
+              error: { message: "Supabase not configured" },
             }),
           }),
         }),
       }),
-    } as any
+    }),
+  } as any
+}
+
+// Server client function - EXPORTED
+export function getSupabaseServerClient() {
+  if (!isSupabaseServerConfigured()) {
+    console.warn("Supabase server environment variables not configured")
+    return createMockClient()
   }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
   return createClient<Database>(supabaseUrl, supabaseServiceKey, {
     auth: {

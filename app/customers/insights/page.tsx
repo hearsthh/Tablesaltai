@@ -24,6 +24,7 @@ import {
   Star,
 } from "lucide-react"
 import { useCustomerStore } from "@/lib/store/customer-store"
+import { CustomerAIDashboard } from "@/components/ai/customer-ai-dashboard"
 
 export default function CustomerInsightsPage() {
   const router = useRouter()
@@ -243,9 +244,9 @@ export default function CustomerInsightsPage() {
                 <ArrowLeft className="w-4 h-4" />
               </Button>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">AI Customer Insights</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">AI Customer Intelligence</h1>
                 <p className="text-slate-600 mt-1 sm:mt-2 text-sm sm:text-base">
-                  AI-powered recommendations to grow your business
+                  Advanced AI analytics with predictive insights and automated customer intelligence
                 </p>
               </div>
             </div>
@@ -268,6 +269,8 @@ export default function CustomerInsightsPage() {
             </div>
           </div>
         </div>
+
+        <CustomerAIDashboard />
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">

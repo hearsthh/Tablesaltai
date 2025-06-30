@@ -1,330 +1,473 @@
 "use client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Logo } from "@/components/logo"
-import { BarChart3, Users, Target, Zap, Star, CheckCircle, TrendingUp, Globe, Menu, X } from "lucide-react"
-import { useState } from "react"
+import {
+  BarChart3,
+  Users,
+  Target,
+  Zap,
+  Star,
+  CheckCircle,
+  TrendingUp,
+  Globe,
+  Menu,
+  X,
+  Brain,
+  Sparkles,
+  ArrowRight,
+  Heart,
+  Shield,
+  Rocket,
+  Play,
+} from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 export default function HomePage() {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [email, setEmail] = useState("")
+  const [isVisible, setIsVisible] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
 
-  const features = [
-    {
-      icon: BarChart3,
-      title: "AI-Powered Analytics",
-      description: "Get deep insights into customer behavior, preferences, and trends with advanced AI analytics.",
-      color: "bg-blue-50 text-blue-600",
-    },
-    {
-      icon: Users,
-      title: "Customer Management",
-      description: "Segment customers, track lifetime value, and manage churn with intelligent automation.",
-      color: "bg-green-50 text-green-600",
-    },
-    {
-      icon: Target,
-      title: "Smart Marketing",
-      description: "Create targeted campaigns, optimize ad spend, and maximize ROI with AI-driven strategies.",
-      color: "bg-purple-50 text-purple-600",
-    },
-    {
-      icon: Zap,
-      title: "Content Generation",
-      description: "Generate engaging social media posts, blog articles, and marketing copy instantly.",
-      color: "bg-orange-50 text-orange-600",
-    },
-    {
-      icon: TrendingUp,
-      title: "Performance Tracking",
-      description: "Monitor campaign performance, track KPIs, and get actionable recommendations.",
-      color: "bg-pink-50 text-pink-600",
-    },
-    {
-      icon: Globe,
-      title: "Multi-Platform Integration",
-      description: "Connect with social media, delivery platforms, and POS systems seamlessly.",
-      color: "bg-indigo-50 text-indigo-600",
-    },
-  ]
+  const heroRef = useRef<HTMLDivElement>(null)
+  const modulesRef = useRef<HTMLDivElement>(null)
+  const aiRef = useRef<HTMLDivElement>(null)
+  const testimonialsRef = useRef<HTMLDivElement>(null)
 
-  const modules = [
+  useEffect(() => {
+    setIsVisible(true)
+
+    const handleScroll = () => setScrollY(window.scrollY)
+    window.addEventListener("scroll", handleScroll)
+
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("animate-fade-in-up")
+          }
+        })
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" },
+    )
+
+    const sections = [modulesRef.current, aiRef.current, testimonialsRef.current]
+    sections.forEach((section) => {
+      if (section) observer.observe(section)
+    })
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      observer.disconnect()
+    }
+  }, [])
+
+  const coreModules = [
     {
       title: "Profile Management",
-      description:
-        "Smart restaurant profiling with AI-generated descriptions, menu optimization, and review management.",
-      features: ["AI Menu Descriptions", "Smart Profiling", "Review Monitoring", "Website Builder"],
+      description: "AI-powered restaurant profiling with smart menu optimization and review management",
       icon: Users,
-      color: "bg-blue-50 border-blue-200",
+      href: "/profile",
+      features: ["Smart Restaurant Profiling", "AI Menu Optimization", "Review Management", "Brand Asset Management"],
+      aiFeatures: [
+        "Menu description generation",
+        "Pricing optimization insights",
+        "Brand voice analysis",
+        "Review sentiment analysis",
+      ],
+      cta: "Build Profile",
     },
     {
       title: "Marketing Hub",
-      description: "Comprehensive marketing tools with AI-powered content creation and campaign management.",
-      features: ["Content Marketing", "Performance Marketing", "Marketing Calendar", "AI Content Creation"],
+      description: "Comprehensive AI-driven marketing with content creation and campaign management",
       icon: Target,
-      color: "bg-green-50 border-green-200",
+      href: "/marketing",
+      features: ["AI Content Creation", "Campaign Management", "Marketing Calendar", "Performance Analytics"],
+      aiFeatures: [
+        "Social media content generation",
+        "Campaign strategy optimization",
+        "Automated scheduling",
+        "ROI prediction",
+      ],
+      cta: "Start Marketing",
     },
     {
       title: "Customer Intelligence",
-      description: "Advanced customer segmentation, churn management, and personalized engagement strategies.",
-      features: ["Customer Segmentation", "Churn Management", "Individual Profiling", "AI Insights"],
+      description: "Advanced AI analytics for customer segmentation and personalized engagement",
       icon: BarChart3,
-      color: "bg-purple-50 border-purple-200",
+      href: "/customers",
+      features: [
+        "Smart Customer Segmentation",
+        "Churn Prediction",
+        "Personalization Engine",
+        "Lifetime Value Analysis",
+      ],
+      aiFeatures: [
+        "Behavioral pattern analysis",
+        "Churn risk prediction",
+        "Personalized recommendations",
+        "Customer journey mapping",
+      ],
+      cta: "Analyze Data",
+    },
+  ]
+
+  const aiCapabilities = [
+    {
+      title: "Content Generation AI",
+      description: "Create engaging content across all platforms instantly",
+      icon: Sparkles,
+      gradient: "from-emerald-500 to-teal-500",
+      examples: ["Social media posts", "Menu descriptions", "Email campaigns", "Blog articles"],
+    },
+    {
+      title: "Analytics & Insights AI",
+      description: "Deep insights and predictive analytics for growth",
+      icon: Brain,
+      gradient: "from-purple-500 to-indigo-500",
+      examples: ["Customer behavior", "Revenue forecasting", "Market trends", "Performance optimization"],
+    },
+    {
+      title: "Automation AI",
+      description: "Automate repetitive tasks and workflows",
+      icon: Zap,
+      gradient: "from-blue-500 to-cyan-500",
+      examples: ["Content scheduling", "Review responses", "Campaign optimization", "Customer outreach"],
+    },
+  ]
+
+  const globalFeatures = [
+    {
+      title: "Multi-Language Support",
+      description: "AI content generation in 15+ languages including Hindi, Spanish, French",
+      icon: Globe,
+    },
+    {
+      title: "Local Market Intelligence",
+      description: "Understand local food trends, pricing, and customer preferences",
+      icon: TrendingUp,
+    },
+    {
+      title: "Universal Integrations",
+      description: "Connect with global platforms - Zomato, Uber Eats, DoorDash, and more",
+      icon: Shield,
+    },
+    {
+      title: "Cultural Adaptation",
+      description: "AI adapts content and strategies to local culture and preferences",
+      icon: Heart,
     },
   ]
 
   const testimonials = [
     {
       name: "Rajesh Kumar",
-      role: "Owner, Spice Garden",
-      content: "TableSalt AI transformed our marketing. Our customer engagement increased by 150% in just 3 months!",
+      role: "Owner, Spice Garden Mumbai",
+      content: "TableSalt AI increased our customer engagement by 150% and revenue by 35% in just 3 months!",
       rating: 5,
+      location: "🇮🇳 India",
     },
     {
-      name: "Priya Sharma",
-      role: "Marketing Manager, Urban Bites",
-      content: "The AI-generated content saves us hours every week. Our social media presence has never been stronger.",
+      name: "Maria Rodriguez",
+      role: "Manager, Casa Mexicana",
+      content:
+        "The AI content generation saves us 20 hours per week. Our social media presence has never been stronger.",
       rating: 5,
+      location: "🇺🇸 USA",
     },
     {
-      name: "Amit Patel",
-      role: "Founder, Curry House Chain",
-      content: "Customer segmentation insights helped us increase our average order value by 40%. Incredible ROI!",
+      name: "Ahmed Hassan",
+      role: "Founder, Desert Rose Chain",
+      content: "Customer segmentation insights helped us increase average order value by 40%. Incredible ROI!",
       rating: 5,
-    },
-  ]
-
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "₹2,999",
-      period: "/month",
-      description: "Perfect for small restaurants getting started",
-      features: [
-        "Basic AI Analytics",
-        "Social Media Management",
-        "Customer Database (up to 500)",
-        "Email Marketing",
-        "Basic Templates",
-        "Email Support",
-      ],
-      popular: false,
-    },
-    {
-      name: "Professional",
-      price: "₹5,999",
-      period: "/month",
-      description: "Ideal for growing restaurants and chains",
-      features: [
-        "Advanced AI Analytics",
-        "Full Marketing Suite",
-        "Customer Database (up to 2,000)",
-        "AI Content Generation",
-        "Custom Campaigns",
-        "Priority Support",
-        "Integration Support",
-      ],
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      price: "₹12,999",
-      period: "/month",
-      description: "For large chains and restaurant groups",
-      features: [
-        "Enterprise AI Analytics",
-        "Multi-location Management",
-        "Unlimited Customer Database",
-        "Custom AI Models",
-        "Dedicated Account Manager",
-        "24/7 Phone Support",
-        "Custom Integrations",
-        "White-label Options",
-      ],
-      popular: false,
+      location: "🇦🇪 UAE",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
+      <style jsx global>{`
+        html {
+          scroll-behavior: smooth;
+        }
+        
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in-up {
+          animation: fade-in-up 0.8s ease-out forwards;
+        }
+        
+        .opacity-0 {
+          opacity: 0;
+        }
+      `}</style>
+
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Logo size="md" />
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">
-                Features
-              </a>
-              <a href="#modules" className="text-slate-600 hover:text-slate-900 transition-colors">
+              <a
+                href="#modules"
+                className="text-slate-600 hover:text-black transition-all duration-200 text-sm font-medium hover:scale-105"
+              >
                 Modules
               </a>
-              <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">
+              <a
+                href="#ai-features"
+                className="text-slate-600 hover:text-black transition-all duration-200 text-sm font-medium hover:scale-105"
+              >
+                AI Features
+              </a>
+              <a
+                href="#pricing"
+                className="text-slate-600 hover:text-black transition-all duration-200 text-sm font-medium hover:scale-105"
+              >
                 Pricing
               </a>
-              <a href="#testimonials" className="text-slate-600 hover:text-slate-900 transition-colors">
+              <a
+                href="#testimonials"
+                className="text-slate-600 hover:text-black transition-all duration-200 text-sm font-medium hover:scale-105"
+              >
                 Reviews
-              </a>
-              <a href="#about" className="text-slate-600 hover:text-slate-900 transition-colors">
-                About
               </a>
             </nav>
 
             <div className="hidden md:flex items-center space-x-4">
               <Link href="/auth/login">
-                <Button variant="ghost" className="bg-white hover:bg-slate-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-sm font-medium hover:scale-105 transition-transform rounded-md"
+                >
                   Sign In
                 </Button>
               </Link>
               <Link href="/auth/signup">
-                <Button className="bg-orange-600 hover:bg-orange-700">Get Started</Button>
+                <Button
+                  size="sm"
+                  className="bg-black hover:bg-gray-800 text-white text-sm font-medium hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md rounded-md"
+                >
+                  Get Started
+                </Button>
               </Link>
             </div>
 
             {/* Mobile Menu Button */}
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden hover:scale-105 transition-transform rounded-md"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="md:hidden border-t bg-white py-2 space-y-1">
-              <Link href="/auth/login">
-                <Button variant="ghost" className="w-full justify-start">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button className="w-full bg-orange-600 hover:bg-orange-700">Get Started</Button>
-              </Link>
+            <div className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-sm py-4 space-y-2 animate-in slide-in-from-top-2 duration-200">
+              <a
+                href="#modules"
+                className="block px-4 py-2 text-slate-600 hover:text-black transition-colors font-medium"
+              >
+                Modules
+              </a>
+              <a
+                href="#ai-features"
+                className="block px-4 py-2 text-slate-600 hover:text-black transition-colors font-medium"
+              >
+                AI Features
+              </a>
+              <a
+                href="#pricing"
+                className="block px-4 py-2 text-slate-600 hover:text-black transition-colors font-medium"
+              >
+                Pricing
+              </a>
+              <a
+                href="#testimonials"
+                className="block px-4 py-2 text-slate-600 hover:text-black transition-colors font-medium"
+              >
+                Reviews
+              </a>
+              <div className="px-4 pt-4 space-y-2">
+                <Link href="/auth/login" className="block">
+                  <Button variant="ghost" size="sm" className="w-full font-medium rounded-md">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/auth/signup" className="block">
+                  <Button size="sm" className="w-full bg-black hover:bg-gray-800 text-white font-medium rounded-md">
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
             </div>
           )}
         </div>
       </header>
 
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">🧂 TableSalt AI</h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">AI-Powered Marketing Platform for Restaurants</p>
-          <div className="max-w-2xl mx-auto bg-green-50 border border-green-200 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold text-green-800 mb-2">✅ Platform Ready!</h2>
-            <p className="text-green-700">
-              All core features are deployed and ready. OpenAI integration is active for real AI content generation.
-            </p>
-          </div>
-
-          <div className="mt-8 grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">🤖 AI Features Active</h3>
-              <p className="text-blue-700 text-sm">OpenAI integration ready for content generation</p>
-            </div>
-
-            <div className="bg-purple-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-purple-900 mb-2">🍽️ Menu Builder</h3>
-              <p className="text-purple-700 text-sm">AI-powered menu optimization and insights</p>
-            </div>
-
-            <div className="bg-orange-50 p-6 rounded-lg">
-              <h3 className="font-semibold text-orange-900 mb-2">📊 Analytics</h3>
-              <p className="text-orange-700 text-sm">Customer insights and marketing analytics</p>
-            </div>
-          </div>
-
-          <div className="mt-12 space-y-4">
-            <Link href="/profile/menu-builder">
-              <Button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors mr-4">
-                🚀 Test Menu Builder AI
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button variant="outline" className="px-8 py-3 rounded-lg">
-                View Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">🍽️ Menu Builder</CardTitle>
-              <CardDescription>AI-powered menu optimization with real content generation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                Generate menu descriptions, analyze pricing, get brand insights, and create seasonal menus with OpenAI.
-              </p>
-              <Link href="/profile/menu-builder">
-                <Button size="sm" className="w-full">
-                  Test AI Features
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">📊 Customer Analytics</CardTitle>
-              <CardDescription>AI-driven customer insights and segmentation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                Analyze customer behavior, predict churn, and get personalized marketing recommendations.
-              </p>
-              <Link href="/customers">
-                <Button size="sm" className="w-full" variant="outline">
-                  Explore Analytics
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">🎯 Marketing Hub</CardTitle>
-              <CardDescription>AI content generation and campaign management</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                Create marketing campaigns, generate social media content, and optimize ad performance.
-              </p>
-              <Link href="/marketing">
-                <Button size="sm" className="w-full" variant="outline">
-                  Try Marketing Tools
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section
+        ref={heroRef}
+        className="relative bg-gradient-to-br from-gray-50 to-white py-16 sm:py-20 lg:py-24 overflow-hidden"
+        style={{
+          transform: `translateY(${scrollY * 0.1}px)`,
+        }}
+      >
+        <div className="absolute inset-0 bg-grid-gray-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-              Powerful Features for Restaurant Success
+          <div
+            className={`text-center mb-12 sm:mb-16 transition-all duration-1000 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
+          >
+            <div className="flex items-center justify-center mb-6 sm:mb-8">
+              <div className="relative">
+                <Brain className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-slate-600 mr-3 sm:mr-4 animate-pulse" />
+                <div className="absolute -inset-1 bg-slate-600/20 rounded-full blur animate-ping" />
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-black leading-tight">TableSalt AI</h1>
+            </div>
+
+            <div className="space-y-4 sm:space-y-6 mb-10 sm:mb-12">
+              <p className="text-xl sm:text-2xl lg:text-3xl text-gray-800 font-semibold max-w-4xl mx-auto leading-relaxed">
+                AI-Powered Restaurant Management Platform
+              </p>
+              <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Transform your restaurant with intelligent profiling, automated marketing, and customer insights. Built
+                for global restaurants, launching in India.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-10 sm:mb-12">
+              <Link href="/profile/menu-builder">
+                <Button
+                  size="lg"
+                  className="group bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-6 py-3 text-base font-medium shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 rounded-md"
+                >
+                  <Sparkles className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+                  Try AI Menu Builder
+                </Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="group px-6 py-3 text-base font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 hover:text-black transition-all duration-300 hover:scale-105 hover:shadow-sm rounded-md bg-transparent"
+                >
+                  <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform text-slate-600" />
+                  <span className="text-gray-700 group-hover:text-black">Watch Demo</span>
+                </Button>
+              </Link>
+            </div>
+
+            {/* Global Launch Status */}
+            <div
+              className={`flex flex-wrap items-center justify-center gap-3 sm:gap-4 transition-all duration-1000 delay-300 ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
+            >
+              <Badge className="bg-gray-100 text-gray-800 px-4 py-2 hover:scale-105 transition-transform cursor-default font-medium text-sm border border-gray-200 rounded-md">
+                🇮🇳 Launching in India
+              </Badge>
+              <Badge className="bg-gray-100 text-gray-800 px-4 py-2 hover:scale-105 transition-transform cursor-default font-medium text-sm border border-gray-200 rounded-md">
+                🌍 Global Platform
+              </Badge>
+              <Badge className="bg-gray-100 text-gray-800 px-4 py-2 hover:scale-105 transition-transform cursor-default font-medium text-sm border border-gray-200 rounded-md">
+                🤖 AI-First
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Core Modules Section */}
+      <section id="modules" ref={modulesRef} className="py-16 sm:py-20 lg:py-24 bg-gray-50 opacity-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 leading-tight">
+              Three Powerful AI Modules
             </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Everything you need to understand your customers, optimize your marketing, and grow your business.
+            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              Complete restaurant management solution with AI automation at every step
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="border-slate-200 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center mb-4`}>
-                    <feature.icon className="w-6 h-6" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
+            {coreModules.map((module, index) => (
+              <Card
+                key={index}
+                className="border border-gray-200 hover:shadow-lg transition-all duration-500 cursor-pointer group bg-white hover:-translate-y-2 rounded-lg overflow-hidden"
+                onClick={() => router.push(module.href)}
+              >
+                <CardHeader className="pb-6">
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <module.icon className="w-6 h-6 text-slate-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold group-hover:text-black transition-colors leading-tight">
+                        {module.title}
+                      </CardTitle>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">{feature.title}</h3>
-                  <p className="text-slate-600">{feature.description}</p>
+                  <CardDescription className="text-base text-gray-600 leading-relaxed">
+                    {module.description}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-8">
+                  {/* Core Features */}
+                  <div>
+                    <h4 className="font-bold text-black mb-4 text-base">Core Features:</h4>
+                    <div className="space-y-3">
+                      {module.features.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-center text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-slate-500 mr-3 flex-shrink-0" />
+                          <span className="font-medium">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI Features */}
+                  <div>
+                    <h4 className="font-bold text-black mb-4 text-base flex items-center">
+                      <Brain className="w-4 h-4 mr-2 text-slate-600" />
+                      AI Capabilities:
+                    </h4>
+                    <div className="space-y-3">
+                      {module.aiFeatures.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-center text-sm text-gray-600">
+                          <Zap className="w-3 h-3 text-slate-500 mr-3 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button className="w-full group-hover:shadow-md transition-all duration-300 hover:scale-105 bg-black hover:bg-gray-800 text-white font-medium py-2 rounded-md text-sm">
+                    <ArrowRight className="w-4 h-4 mr-2 group-hover:translate-x-1 transition-transform" />
+                    {module.cta}
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -332,61 +475,110 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Modules Section */}
-      <section id="modules" className="py-20 bg-slate-50">
+      {/* AI Capabilities Section */}
+      <section id="ai-features" ref={aiRef} className="py-16 sm:py-20 lg:py-24 bg-white opacity-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Three Powerful Modules</h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Comprehensive solutions for every aspect of your restaurant's digital presence and customer relationships.
+          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 leading-tight">
+              Advanced AI Capabilities
+            </h2>
+            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              Cutting-edge artificial intelligence designed specifically for restaurant operations
             </p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {modules.map((module, index) => (
-              <Card key={index} className={`border ${module.color} hover:shadow-lg transition-shadow`}>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10 mb-16 sm:mb-20">
+            {aiCapabilities.map((capability, index) => (
+              <Card
+                key={index}
+                className="border border-gray-200 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 group rounded-lg overflow-hidden bg-white"
+              >
                 <CardContent className="p-8">
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center mb-6">
-                    <module.icon className="w-8 h-8 text-slate-700" />
+                  <div
+                    className={`w-16 h-16 rounded-lg bg-gradient-to-r ${capability.gradient} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300 shadow-sm`}
+                  >
+                    <capability.icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">{module.title}</h3>
-                  <p className="text-slate-600 mb-6">{module.description}</p>
-                  <ul className="space-y-2">
-                    {module.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center text-sm text-slate-700">
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                        {feature}
-                      </li>
+                  <h3 className="text-xl font-bold text-black mb-4 leading-tight">{capability.title}</h3>
+                  <p className="text-gray-600 mb-8 text-base leading-relaxed">{capability.description}</p>
+                  <div className="space-y-3">
+                    {capability.examples.map((example, exampleIndex) => (
+                      <div key={exampleIndex} className="flex items-center text-sm text-gray-700">
+                        <Star className="w-3 h-3 text-slate-500 mr-3 flex-shrink-0" />
+                        <span className="font-medium">{example}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+
+          {/* Global Features */}
+          <Card className="bg-gray-50 border border-gray-200 hover:shadow-lg transition-all duration-500 rounded-lg overflow-hidden">
+            <CardHeader className="text-center pb-8">
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-black flex items-center justify-center mb-4">
+                <Globe className="w-8 h-8 mr-3 text-slate-600" />
+                Built for Global Restaurants
+              </CardTitle>
+              <CardDescription className="text-lg text-gray-600 leading-relaxed">
+                Universal platform with local market intelligence
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pb-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {globalFeatures.map((feature, index) => (
+                  <div key={index} className="text-center group">
+                    <div className="w-14 h-14 bg-white border border-gray-200 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                      <feature.icon className="w-7 h-7 text-slate-600" />
+                    </div>
+                    <h3 className="font-bold text-black mb-3 text-base leading-tight">{feature.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-white">
+      <section id="testimonials" ref={testimonialsRef} className="py-16 sm:py-20 lg:py-24 bg-gray-50 opacity-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Loved by Restaurant Owners</h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              See how TableSalt AI is helping restaurants across India grow their business.
+          <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6 leading-tight">
+              Trusted by Restaurants Worldwide
+            </h2>
+            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              See how TableSalt AI is helping restaurants across the globe grow their business
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-slate-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
+              <Card
+                key={index}
+                className="border border-gray-200 hover:shadow-lg transition-all duration-500 hover:-translate-y-2 group rounded-lg overflow-hidden bg-white"
+              >
+                <CardContent className="p-8">
+                  <div className="flex items-center mb-6">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                      <Star key={i} className="w-4 h-4 text-slate-500 fill-current" />
                     ))}
                   </div>
-                  <p className="text-slate-700 mb-4 italic">"{testimonial.content}"</p>
-                  <div>
-                    <p className="font-semibold text-slate-900">{testimonial.name}</p>
-                    <p className="text-sm text-slate-600">{testimonial.role}</p>
+                  <p className="text-gray-700 mb-8 italic text-base leading-relaxed font-medium">
+                    "{testimonial.content}"
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-black text-base">{testimonial.name}</p>
+                      <p className="text-sm text-gray-600 font-medium">{testimonial.role}</p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="text-sm font-medium group-hover:scale-105 transition-transform border border-gray-200 rounded-md"
+                    >
+                      {testimonial.location}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -395,139 +587,111 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-              Choose the plan that fits your restaurant's needs. All plans include a 14-day free trial.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`border-slate-200 relative ${plan.popular ? "ring-2 ring-blue-500" : ""}`}>
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-1 rounded-full">
-                    Most Popular
-                  </div>
-                )}
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
-                  <p className="text-slate-600 mb-6">{plan.description}</p>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
-                    <span className="text-slate-600">{plan.period}</span>
-                  </div>
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center text-sm text-slate-700">
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-3 flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/auth/signup">
-                    <Button
-                      className={`w-full ${plan.popular ? "bg-blue-600 hover:bg-blue-700" : "bg-slate-900 hover:bg-slate-800"}`}
-                    >
-                      Start Free Trial
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+      {/* CTA Section */}
+      <section className="py-16 sm:py-20 lg:py-24 bg-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 sm:mb-8 leading-tight">
+            Ready to Transform Your Restaurant?
+          </h2>
+          <p className="text-lg sm:text-xl text-gray-300 mb-10 sm:mb-12 max-w-3xl mx-auto leading-relaxed">
+            Join thousands of restaurants using AI to grow their business. Start your free trial today.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <Link href="/auth/signup">
+              <Button
+                size="lg"
+                className="group bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-3 text-base font-medium shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 rounded-md"
+              >
+                <Rocket className="w-5 h-5 mr-2 group-hover:-translate-y-1 transition-transform" />
+                Start Free Trial
+              </Button>
+            </Link>
+            <Link href="/pricing">
+              <Button
+                variant="outline"
+                size="lg"
+                className="px-8 py-3 text-base font-medium border border-white text-white hover:bg-white hover:text-black transition-all duration-300 hover:scale-105 rounded-md bg-transparent"
+              >
+                View Pricing
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-12">
+      <footer className="bg-white border-t border-gray-200 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             <div>
-              <Logo size="md" className="mb-4" />
-              <p className="text-slate-600 text-sm">
-                AI-powered marketing platform designed specifically for restaurants to grow their business.
+              <Logo size="md" className="mb-6" />
+              <p className="text-gray-600 text-base leading-relaxed">
+                AI-powered restaurant management platform designed for global restaurants.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900 mb-4">Product</h3>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <h3 className="font-bold text-black mb-6 text-lg">Modules</h3>
+              <ul className="space-y-3 text-base text-gray-600">
                 <li>
-                  <a href="#features" className="hover:text-slate-900">
-                    Features
-                  </a>
+                  <Link href="/profile" className="hover:text-black transition-colors font-medium">
+                    Profile Management
+                  </Link>
                 </li>
                 <li>
-                  <a href="#modules" className="hover:text-slate-900">
-                    Modules
-                  </a>
+                  <Link href="/marketing" className="hover:text-black transition-colors font-medium">
+                    Marketing Hub
+                  </Link>
                 </li>
                 <li>
-                  <a href="#pricing" className="hover:text-slate-900">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <Link href="/profile/menu-builder" className="hover:text-slate-900">
-                    Menu Builder
+                  <Link href="/customers" className="hover:text-black transition-colors font-medium">
+                    Customer Intelligence
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900 mb-4">Company</h3>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <h3 className="font-bold text-black mb-6 text-lg">Company</h3>
+              <ul className="space-y-3 text-base text-gray-600">
                 <li>
-                  <a href="#about" className="hover:text-slate-900">
+                  <a href="#about" className="hover:text-black transition-colors font-medium">
                     About
                   </a>
                 </li>
                 <li>
-                  <a href="/blog" className="hover:text-slate-900">
-                    Blog
-                  </a>
+                  <Link href="/pricing" className="hover:text-black transition-colors font-medium">
+                    Pricing
+                  </Link>
                 </li>
                 <li>
-                  <a href="/careers" className="hover:text-slate-900">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a href="/contact" className="hover:text-slate-900">
+                  <a href="/contact" className="hover:text-black transition-colors font-medium">
                     Contact
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-slate-900 mb-4">Support</h3>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <h3 className="font-bold text-black mb-6 text-lg">Support</h3>
+              <ul className="space-y-3 text-base text-gray-600">
                 <li>
-                  <a href="/help" className="hover:text-slate-900">
+                  <a href="/help" className="hover:text-black transition-colors font-medium">
                     Help Center
                   </a>
                 </li>
                 <li>
-                  <a href="/docs" className="hover:text-slate-900">
+                  <a href="/docs" className="hover:text-black transition-colors font-medium">
                     Documentation
                   </a>
                 </li>
                 <li>
-                  <a href="/privacy" className="hover:text-slate-900">
+                  <a href="/privacy" className="hover:text-black transition-colors font-medium">
                     Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="/terms" className="hover:text-slate-900">
-                    Terms of Service
                   </a>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-200 mt-8 pt-8 text-center text-sm text-slate-600">
+          <div className="border-t border-gray-200 mt-12 pt-8 text-center text-base text-gray-600">
             <p>&copy; 2024 TableSalt AI. All rights reserved.</p>
           </div>
         </div>
