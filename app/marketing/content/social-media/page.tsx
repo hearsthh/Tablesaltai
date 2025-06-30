@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
-import { MobileResponsiveTabs } from "@/components/mobile-responsive-tabs"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
@@ -418,13 +417,11 @@ export default function SocialMediaContentPage() {
         </div>
 
         <Tabs defaultValue="posts" className="space-y-6">
-          <MobileResponsiveTabs>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="posts">All Posts</TabsTrigger>
-              <TabsTrigger value="templates">Templates</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
-          </MobileResponsiveTabs>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="posts">All Posts</TabsTrigger>
+            <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
 
           <TabsContent value="posts" className="space-y-6">
             {/* Bulk Actions */}
@@ -464,144 +461,128 @@ export default function SocialMediaContentPage() {
 
             {/* Posts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {socialMediaPosts && socialMediaPosts.length > 0 ? (
-                socialMediaPosts.map((post) => (
-                  <Card key={post.id} className="border-slate-200 hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Checkbox
-                            checked={selectedPosts.includes(post.id)}
-                            onCheckedChange={() => handlePostSelect(post.id)}
-                          />
-                          <div>
-                            <CardTitle className="text-lg">{post.title}</CardTitle>
-                            <div className="flex items-center space-x-2 mt-1">
-                              {getPlatformIcon(post.platform)}
-                              <span className="text-sm text-slate-600">{post.platform}</span>
-                              <span className="text-slate-400">•</span>
-                              {getTypeIcon(post.type)}
-                              <span className="text-sm text-slate-600">{post.type}</span>
-                            </div>
+              {socialMediaPosts.map((post) => (
+                <Card key={post.id} className="border-slate-200 hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          checked={selectedPosts.includes(post.id)}
+                          onCheckedChange={() => handlePostSelect(post.id)}
+                        />
+                        <div>
+                          <CardTitle className="text-lg">{post.title}</CardTitle>
+                          <div className="flex items-center space-x-2 mt-1">
+                            {getPlatformIcon(post.platform)}
+                            <span className="text-sm text-slate-600">{post.platform}</span>
+                            <span className="text-slate-400">•</span>
+                            {getTypeIcon(post.type)}
+                            <span className="text-sm text-slate-600">{post.type}</span>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          {getStatusIcon(post.status)}
-                          <Badge className={getStatusColor(post.status)} variant="secondary">
-                            {post.status}
-                          </Badge>
-                        </div>
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="bg-slate-50 p-4 rounded-lg">
-                        <p className="text-sm text-slate-700 line-clamp-4">{post.content}</p>
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(post.status)}
+                        <Badge className={getStatusColor(post.status)} variant="secondary">
+                          {post.status}
+                        </Badge>
                       </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <p className="text-sm text-slate-700 line-clamp-4">{post.content}</p>
+                    </div>
 
-                      <div className="flex flex-wrap gap-1">
-                        {post.hashtags && post.hashtags.length > 0
-                          ? post.hashtags.slice(0, 3).map((hashtag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs border-slate-200">
-                                {hashtag}
-                              </Badge>
-                            ))
-                          : null}
-                        {post.hashtags && post.hashtags.length > 3 && (
-                          <Badge variant="outline" className="text-xs border-slate-200">
-                            +{post.hashtags.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
+                    <div className="flex flex-wrap gap-1">
+                      {post.hashtags.slice(0, 3).map((hashtag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs border-slate-200">
+                          {hashtag}
+                        </Badge>
+                      ))}
+                      {post.hashtags.length > 3 && (
+                        <Badge variant="outline" className="text-xs border-slate-200">
+                          +{post.hashtags.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
 
-                      <div className="flex items-center justify-between text-sm text-slate-600">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-1">
-                            <Heart className="w-4 h-4" />
-                            <span>{post.engagement?.likes || 0}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <MessageSquare className="w-4 h-4" />
-                            <span>{post.engagement?.comments || 0}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Share2 className="w-4 h-4" />
-                            <span>{post.engagement?.shares || 0}</span>
-                          </div>
+                    <div className="flex items-center justify-between text-sm text-slate-600">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                          <Heart className="w-4 h-4" />
+                          <span>{post.engagement.likes}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <Eye className="w-4 h-4" />
-                          <span>{post.reach || "0"}</span>
+                          <MessageSquare className="w-4 h-4" />
+                          <span>{post.engagement.comments}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Share2 className="w-4 h-4" />
+                          <span>{post.engagement.shares}</span>
                         </div>
                       </div>
+                      <div className="flex items-center space-x-1">
+                        <Eye className="w-4 h-4" />
+                        <span>{post.reach}</span>
+                      </div>
+                    </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className="text-xs text-slate-500">{post.scheduledDate}</span>
-                        <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="ghost" className="rounded-md">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="rounded-md">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="rounded-md">
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50 rounded-md">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                      <span className="text-xs text-slate-500">{post.scheduledDate}</span>
+                      <div className="flex items-center space-x-2">
+                        <Button size="sm" variant="ghost" className="rounded-md">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="rounded-md">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="rounded-md">
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50 rounded-md">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-slate-500">No social media posts found.</p>
-                </div>
-              )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
 
           <TabsContent value="templates" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {contentTemplates && contentTemplates.length > 0 ? (
-                contentTemplates.map((template, index) => (
-                  <Card key={index} className="border-slate-200 hover:shadow-md transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{template.name}</CardTitle>
-                      <CardDescription>{template.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">Platforms:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {template.platforms && template.platforms.length > 0
-                            ? template.platforms.map((platform, platformIndex) => (
-                                <Badge key={platformIndex} variant="outline" className="text-xs border-slate-200">
-                                  {platform}
-                                </Badge>
-                              ))
-                            : null}
-                        </div>
+              {contentTemplates.map((template, index) => (
+                <Card key={index} className="border-slate-200 hover:shadow-md transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{template.name}</CardTitle>
+                    <CardDescription>{template.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <span className="text-sm font-medium text-slate-700">Platforms:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {template.platforms.map((platform, platformIndex) => (
+                          <Badge key={platformIndex} variant="outline" className="text-xs border-slate-200">
+                            {platform}
+                          </Badge>
+                        ))}
                       </div>
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">Type:</span>
-                        <Badge className="ml-2 bg-blue-100 text-blue-700" variant="secondary">
-                          {template.type}
-                        </Badge>
-                      </div>
-                      <Button className="w-full bg-slate-900 hover:bg-slate-800 rounded-md">
-                        <Zap className="w-4 h-4 mr-2" />
-                        Use Template
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-slate-500">No templates available.</p>
-                </div>
-              )}
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-slate-700">Type:</span>
+                      <Badge className="ml-2 bg-blue-100 text-blue-700" variant="secondary">
+                        {template.type}
+                      </Badge>
+                    </div>
+                    <Button className="w-full bg-slate-900 hover:bg-slate-800 rounded-md">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Use Template
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
 

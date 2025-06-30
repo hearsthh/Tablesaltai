@@ -1,7 +1,7 @@
 "use client"
 
-import type React from "react"
-
+import type { ReactNode } from "react"
+import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -9,16 +9,17 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 interface Tab {
   id: string
   label: string
-  content: React.ReactNode
+  content: ReactNode
 }
 
 interface MobileResponsiveTabsProps {
+  children: ReactNode
   tabs: Tab[]
   defaultTab?: string
   className?: string
 }
 
-export function MobileResponsiveTabs({ tabs, defaultTab, className = "" }: MobileResponsiveTabsProps) {
+export function MobileResponsiveTabs({ children, tabs, defaultTab, className = "" }: MobileResponsiveTabsProps) {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id || "")
   const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
   const currentTab = tabs[currentIndex]
@@ -36,7 +37,7 @@ export function MobileResponsiveTabs({ tabs, defaultTab, className = "" }: Mobil
   }
 
   return (
-    <div className={`w-full ${className}`}>
+    <div className={cn("w-full", className)}>
       {/* Desktop Tabs */}
       <div className="hidden md:block">
         <div className="border-b border-gray-200">
@@ -99,6 +100,7 @@ export function MobileResponsiveTabs({ tabs, defaultTab, className = "" }: Mobil
           ))}
         </div>
       </div>
+      {children}
     </div>
   )
 }
