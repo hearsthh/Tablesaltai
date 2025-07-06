@@ -3,231 +3,150 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { MoreHorizontal, Edit, Trash2, Eye, Calendar, Clock } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { MoreHorizontal, Calendar, Eye, Heart, MessageCircle } from "lucide-react"
 
 interface ContentUnitCardProps {
-  id: string
   title: string
-  description: string
-  type: "post" | "story" | "reel" | "carousel" | "video" | "blog"
+  type: "post" | "story" | "reel" | "article" | "email"
   status: "draft" | "scheduled" | "published" | "archived"
-  platform: string
   scheduledDate?: string
   publishedDate?: string
-  performance?: {
+  platform: string[]
+  engagement?: {
     views: number
     likes: number
-    shares: number
     comments: number
+    shares: number
   }
-  thumbnail?: string
-  onEdit?: (id: string) => void
-  onDelete?: (id: string) => void
-  onPreview?: (id: string) => void
-  onSchedule?: (id: string) => void
-  className?: string
+  onEdit?: () => void
+  onSchedule?: () => void
+  onPublish?: () => void
 }
 
 export function ContentUnitCard({
-  id,
   title,
-  description,
   type,
   status,
-  platform,
   scheduledDate,
   publishedDate,
-  performance,
-  thumbnail,
+  platform,
+  engagement,
   onEdit,
-  onDelete,
-  onPreview,
   onSchedule,
-  className,
+  onPublish,
 }: ContentUnitCardProps) {
-  const getStatusConfig = () => {
+  const getStatusColor = () => {
     switch (status) {
       case "draft":
-        return {
-          color: "bg-gray-100 text-gray-800 border-gray-200",
-          label: "Draft",
-        }
+        return "bg-gray-100 text-gray-800"
       case "scheduled":
-        return {
-          color: "bg-blue-100 text-blue-800 border-blue-200",
-          label: "Scheduled",
-        }
+        return "bg-blue-100 text-blue-800"
       case "published":
-        return {
-          color: "bg-green-100 text-green-800 border-green-200",
-          label: "Published",
-        }
+        return "bg-green-100 text-green-800"
       case "archived":
-        return {
-          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-          label: "Archived",
-        }
-      default:
-        return {
-          color: "bg-gray-100 text-gray-800 border-gray-200",
-          label: "Unknown",
-        }
+        return "bg-yellow-100 text-yellow-800"
     }
   }
 
-  const getTypeConfig = () => {
+  const getTypeColor = () => {
     switch (type) {
       case "post":
-        return { label: "Post", color: "bg-blue-50 text-blue-700" }
+        return "bg-purple-100 text-purple-800"
       case "story":
-        return { label: "Story", color: "bg-purple-50 text-purple-700" }
+        return "bg-pink-100 text-pink-800"
       case "reel":
-        return { label: "Reel", color: "bg-pink-50 text-pink-700" }
-      case "carousel":
-        return { label: "Carousel", color: "bg-green-50 text-green-700" }
-      case "video":
-        return { label: "Video", color: "bg-red-50 text-red-700" }
-      case "blog":
-        return { label: "Blog", color: "bg-orange-50 text-orange-700" }
-      default:
-        return { label: "Content", color: "bg-gray-50 text-gray-700" }
+        return "bg-orange-100 text-orange-800"
+      case "article":
+        return "bg-indigo-100 text-indigo-800"
+      case "email":
+        return "bg-teal-100 text-teal-800"
     }
-  }
-
-  const statusConfig = getStatusConfig()
-  const typeConfig = getTypeConfig()
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toLocaleString()
   }
 
   return (
-    <Card className={`border-gray-200 hover:shadow-md transition-shadow ${className}`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2 mb-1">
-              <Badge variant="outline" className={`text-xs ${typeConfig.color} border-0`}>
-                {typeConfig.label}
-              </Badge>
-              <Badge variant="outline" className={`text-xs ${statusConfig.color}`}>
-                {statusConfig.label}
-              </Badge>
-            </div>
-            <CardTitle className="text-lg font-semibold text-gray-900 truncate">{title}</CardTitle>
-            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{description}</p>
-          </div>
-          <div className="flex items-center space-x-2 ml-2">
-            {thumbnail && (
-              <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                <img src={thumbnail || "/placeholder.svg"} alt={title} className="w-full h-full object-cover" />
-              </div>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onPreview && (
-                  <DropdownMenuItem onClick={() => onPreview(id)}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Preview Content
-                  </DropdownMenuItem>
-                )}
-                {onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(id)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Content
-                  </DropdownMenuItem>
-                )}
-                {onSchedule && status === "draft" && (
-                  <DropdownMenuItem onClick={() => onSchedule(id)}>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Schedule Content
-                  </DropdownMenuItem>
-                )}
-                {onDelete && (
-                  <DropdownMenuItem onClick={() => onDelete(id)} className="text-red-600">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Content
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+    <Card className="bg-white border-gray-200 hover:shadow-md transition-shadow">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="flex items-center space-x-2">
+          <CardTitle className="text-lg font-semibold text-black">{title}</CardTitle>
+          <Badge className={getTypeColor()}>{type}</Badge>
+          <Badge className={getStatusColor()}>{status}</Badge>
         </div>
+        <Button variant="ghost" size="sm">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Platform and Timing */}
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-600">Platform:</span>
-            <span className="font-medium text-gray-900">{platform}</span>
-          </div>
-          {scheduledDate && status === "scheduled" && (
-            <div className="flex items-center space-x-1 text-blue-600">
-              <Clock className="w-3 h-3" />
-              <span className="text-xs">{new Date(scheduledDate).toLocaleDateString()}</span>
-            </div>
-          )}
-          {publishedDate && status === "published" && (
-            <div className="flex items-center space-x-1 text-green-600">
-              <Calendar className="w-3 h-3" />
-              <span className="text-xs">{new Date(publishedDate).toLocaleDateString()}</span>
-            </div>
-          )}
+      <CardContent>
+        {/* Platform Tags */}
+        <div className="flex flex-wrap gap-1 mb-4">
+          {platform.map((p) => (
+            <Badge key={p} variant="outline" className="text-xs">
+              {p}
+            </Badge>
+          ))}
         </div>
 
-        {/* Performance Metrics (only for published content) */}
-        {performance && status === "published" && (
-          <div className="grid grid-cols-4 gap-2 pt-3 border-t border-gray-100">
+        {/* Engagement Metrics (if published) */}
+        {engagement && status === "published" && (
+          <div className="grid grid-cols-4 gap-4 mb-4">
             <div className="text-center">
-              <div className="text-sm font-bold text-gray-900">{formatNumber(performance.views)}</div>
-              <div className="text-xs text-gray-600">Views</div>
+              <div className="text-lg font-bold text-black">{engagement.views.toLocaleString()}</div>
+              <div className="text-xs text-gray-500 flex items-center justify-center">
+                <Eye className="h-3 w-3 mr-1" />
+                Views
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-sm font-bold text-gray-900">{formatNumber(performance.likes)}</div>
-              <div className="text-xs text-gray-600">Likes</div>
+              <div className="text-lg font-bold text-black">{engagement.likes.toLocaleString()}</div>
+              <div className="text-xs text-gray-500 flex items-center justify-center">
+                <Heart className="h-3 w-3 mr-1" />
+                Likes
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-sm font-bold text-gray-900">{formatNumber(performance.shares)}</div>
-              <div className="text-xs text-gray-600">Shares</div>
+              <div className="text-lg font-bold text-black">{engagement.comments}</div>
+              <div className="text-xs text-gray-500 flex items-center justify-center">
+                <MessageCircle className="h-3 w-3 mr-1" />
+                Comments
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-sm font-bold text-gray-900">{formatNumber(performance.comments)}</div>
-              <div className="text-xs text-gray-600">Comments</div>
+              <div className="text-lg font-bold text-black">{engagement.shares}</div>
+              <div className="text-xs text-gray-500">Shares</div>
             </div>
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-2 pt-2">
-          {status === "draft" && (
-            <>
-              {onEdit && (
-                <Button size="sm" variant="outline" onClick={() => onEdit(id)} className="text-xs">
-                  Edit
-                </Button>
-              )}
-              {onSchedule && (
-                <Button
-                  size="sm"
-                  onClick={() => onSchedule(id)}
-                  className="text-xs bg-black text-white hover:bg-gray-800"
-                >
-                  Schedule
-                </Button>
-              )}
-            </>
+        {/* Dates */}
+        <div className="flex items-center justify-between mb-4">
+          {scheduledDate && (
+            <div className="flex items-center text-xs text-gray-500">
+              <Calendar className="h-3 w-3 mr-1" />
+              Scheduled: {scheduledDate}
+            </div>
           )}
-          {onPreview && (
-            <Button size="sm" variant="outline" onClick={() => onPreview(id)} className="text-xs">
-              Preview
+          {publishedDate && (
+            <div className="flex items-center text-xs text-gray-500">
+              <Calendar className="h-3 w-3 mr-1" />
+              Published: {publishedDate}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex space-x-2">
+          {onEdit && (
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              Edit
+            </Button>
+          )}
+          {onSchedule && status === "draft" && (
+            <Button size="sm" onClick={onSchedule} className="bg-blue-600 hover:bg-blue-700 text-white">
+              Schedule
+            </Button>
+          )}
+          {onPublish && status === "draft" && (
+            <Button size="sm" onClick={onPublish} className="bg-black hover:bg-gray-800 text-white">
+              Publish Now
             </Button>
           )}
         </div>

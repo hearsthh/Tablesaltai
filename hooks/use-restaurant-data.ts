@@ -3,91 +3,71 @@
 import { useState, useEffect } from "react"
 
 interface RestaurantData {
-  name: string
-  cuisine: string
-  location: string
-  avgRating: number
-  topDishes: Array<{
-    id: string
+  profile: {
     name: string
-    sales: number
-    revenue: number
+    cuisine: string
     rating: number
-  }>
-  tagline: string
-  phone: string
-  email: string
-  website: string
-  establishedYear: number
-  totalOrders: number
-  totalRevenue: number
-  growthScore: number
+    totalReviews: number
+    monthlyRevenue: number
+    revenueChange: number
+  }
+  menu: {
+    totalItems: number
+    categories: number
+    avgPrice: number
+    topPerformer: string
+  }
+  performance: {
+    ordersToday: number
+    ordersChange: number
+    avgOrderValue: number
+    avgOrderValueChange: number
+  }
 }
 
 export function useRestaurantData() {
-  const [data, setData] = useState<RestaurantData>({
-    name: "Tasty Biryani",
-    cuisine: "Indian",
-    location: "Mumbai, Maharashtra",
-    avgRating: 4.7,
-    topDishes: [
-      {
-        id: "1",
-        name: "Butter Chicken",
-        sales: 156,
-        revenue: 26520,
-        rating: 4.8,
-      },
-      {
-        id: "2",
-        name: "Chicken Biryani",
-        sales: 134,
-        revenue: 20100,
-        rating: 4.6,
-      },
-      {
-        id: "3",
-        name: "Paneer Tikka",
-        sales: 89,
-        revenue: 13350,
-        rating: 4.5,
-      },
-    ],
-    tagline: "Hyderabadi Flavours Since 2002",
-    phone: "+91 98765 43210",
-    email: "contact@tastybiryani.com",
-    website: "www.tastybiryani.com",
-    establishedYear: 2002,
-    totalOrders: 2847,
-    totalRevenue: 425600,
-    growthScore: 87,
-  })
-
-  const [loading, setLoading] = useState(false)
+  const [data, setData] = useState<RestaurantData | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const refreshData = async () => {
-    setLoading(true)
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      // In real app, fetch from API
-      setError(null)
-    } catch (err) {
-      setError("Failed to fetch restaurant data")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    refreshData()
+    // Simulate API call
+    const fetchData = async () => {
+      try {
+        // Mock data - replace with actual API call
+        const mockData: RestaurantData = {
+          profile: {
+            name: "Spice Garden",
+            cuisine: "Indian",
+            rating: 4.6,
+            totalReviews: 1247,
+            monthlyRevenue: 125000,
+            revenueChange: 12.5,
+          },
+          menu: {
+            totalItems: 85,
+            categories: 8,
+            avgPrice: 280,
+            topPerformer: "Butter Chicken",
+          },
+          performance: {
+            ordersToday: 47,
+            ordersChange: 8.3,
+            avgOrderValue: 450,
+            avgOrderValueChange: -2.1,
+          },
+        }
+
+        setData(mockData)
+      } catch (err) {
+        setError("Failed to fetch restaurant data")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
   }, [])
 
-  return {
-    data,
-    loading,
-    error,
-    refreshData,
-  }
+  return { data, loading, error }
 }

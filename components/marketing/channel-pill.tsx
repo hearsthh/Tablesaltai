@@ -1,98 +1,40 @@
-"use client"
-
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Check, X, AlertCircle } from "lucide-react"
+import { CheckCircle, AlertCircle, Clock } from "lucide-react"
 
 interface ChannelPillProps {
   name: string
-  status: "connected" | "disconnected" | "error" | "pending"
-  platform: string
-  lastSync?: string
-  onConnect?: () => void
-  onDisconnect?: () => void
-  className?: string
+  status: "connected" | "disconnected" | "pending"
+  count?: number
 }
 
-export function ChannelPill({
-  name,
-  status,
-  platform,
-  lastSync,
-  onConnect,
-  onDisconnect,
-  className,
-}: ChannelPillProps) {
-  const getStatusConfig = () => {
+export function ChannelPill({ name, status, count }: ChannelPillProps) {
+  const getStatusIcon = () => {
     switch (status) {
       case "connected":
-        return {
-          icon: Check,
-          color: "bg-green-100 text-green-800 border-green-200",
-          label: "Connected",
-        }
+        return <CheckCircle className="h-3 w-3 text-green-600" />
       case "disconnected":
-        return {
-          icon: X,
-          color: "bg-gray-100 text-gray-800 border-gray-200",
-          label: "Disconnected",
-        }
-      case "error":
-        return {
-          icon: AlertCircle,
-          color: "bg-red-100 text-red-800 border-red-200",
-          label: "Error",
-        }
+        return <AlertCircle className="h-3 w-3 text-red-600" />
       case "pending":
-        return {
-          icon: AlertCircle,
-          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
-          label: "Pending",
-        }
-      default:
-        return {
-          icon: X,
-          color: "bg-gray-100 text-gray-800 border-gray-200",
-          label: "Unknown",
-        }
+        return <Clock className="h-3 w-3 text-yellow-600" />
     }
   }
 
-  const statusConfig = getStatusConfig()
-  const StatusIcon = statusConfig.icon
+  const getStatusColor = () => {
+    switch (status) {
+      case "connected":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "disconnected":
+        return "bg-red-100 text-red-800 border-red-200"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+    }
+  }
 
   return (
-    <div className={`flex items-center space-x-2 p-3 bg-white border border-gray-200 rounded-lg ${className}`}>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center space-x-2">
-          <h4 className="text-sm font-medium text-gray-900 truncate">{name}</h4>
-          <Badge variant="outline" className={`text-xs ${statusConfig.color}`}>
-            <StatusIcon className="w-3 h-3 mr-1" />
-            {statusConfig.label}
-          </Badge>
-        </div>
-        <div className="flex items-center space-x-2 mt-1">
-          <span className="text-xs text-gray-500">{platform}</span>
-          {lastSync && (
-            <>
-              <span className="text-gray-300">•</span>
-              <span className="text-xs text-gray-500">Synced {lastSync}</span>
-            </>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center space-x-1">
-        {status === "connected" && onDisconnect && (
-          <Button size="sm" variant="outline" onClick={onDisconnect} className="text-xs bg-transparent">
-            Disconnect
-          </Button>
-        )}
-        {status !== "connected" && onConnect && (
-          <Button size="sm" onClick={onConnect} className="text-xs bg-black text-white hover:bg-gray-800">
-            Connect
-          </Button>
-        )}
-      </div>
-    </div>
+    <Badge variant="outline" className={`${getStatusColor()} flex items-center space-x-1`}>
+      {getStatusIcon()}
+      <span>{name}</span>
+      {count !== undefined && <span className="ml-1">({count})</span>}
+    </Badge>
   )
 }
