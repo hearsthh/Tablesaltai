@@ -1,251 +1,346 @@
 "use client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Eye, Heart, DollarSign, Target, Calendar, Brain } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Navigation } from "@/components/navigation"
+import { usePerformanceMetrics } from "@/hooks/use-performance-metrics"
+import { PerformanceFunnel } from "@/components/marketing/performance-funnel"
+import { BarChart3, TrendingUp, TrendingDown, Target, DollarSign, Eye, MessageSquare, RefreshCw } from "lucide-react"
 
-export default function AnalyticsPage() {
-  const router = useRouter()
+export default function MarketingAnalyticsPage() {
+  const { metrics, loading, error } = usePerformanceMetrics()
+  const [selectedTimeframe, setSelectedTimeframe] = useState("30d")
 
-  const performanceMetrics = [
-    { title: "Total Reach", value: "12.5K", change: "+18%", icon: Eye, color: "text-blue-600" },
-    { title: "Engagement Rate", value: "4.2%", change: "+0.8%", icon: Heart, color: "text-pink-600" },
-    { title: "Click-through Rate", value: "2.8%", change: "+0.5%", icon: Target, color: "text-green-600" },
-    { title: "ROI", value: "+35%", change: "+12%", icon: DollarSign, color: "text-purple-600" },
-  ]
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`
+    }
+    return num.toLocaleString()
+  }
 
-  const platformPerformance = [
-    { platform: "Instagram", posts: 12, reach: "8.5K", engagement: "6.8%", roi: "+42%" },
-    { platform: "Facebook", posts: 8, reach: "4.2K", engagement: "3.1%", roi: "+28%" },
-    { platform: "Twitter", posts: 4, reach: "2.5K", engagement: "2.3%", roi: "+15%" },
-  ]
+  const formatCurrency = (amount: number) => {
+    return `₹${formatNumber(amount)}`
+  }
 
-  const topContent = [
-    {
-      title: "Weekend Special Promotion",
-      platform: "Instagram",
-      reach: "2.1K",
-      engagement: "8.5%",
-      type: "Image Post",
-    },
-    {
-      title: "Behind the Scenes - Chef's Special",
-      platform: "Facebook",
-      reach: "1.8K",
-      engagement: "7.2%",
-      type: "Video Post",
-    },
-    {
-      title: "Customer Review Highlight",
-      platform: "Twitter",
-      reach: "1.2K",
-      engagement: "5.8%",
-      type: "Text Post",
-    },
-  ]
+  const getInsightIcon = (type: string) => {
+    switch (type) {
+      case "positive":
+        return <TrendingUp className="w-4 h-4 text-green-600" />
+      case "negative":
+        return <TrendingDown className="w-4 h-4 text-red-600" />
+      default:
+        return <BarChart3 className="w-4 h-4 text-blue-600" />
+    }
+  }
+
+  const getInsightColor = (type: string) => {
+    switch (type) {
+      case "positive":
+        return "bg-green-50 border-green-200 text-green-800"
+      case "negative":
+        return "bg-red-50 border-red-200 text-red-800"
+      default:
+        return "bg-blue-50 border-blue-200 text-blue-800"
+    }
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-800"
+      case "medium":
+        return "bg-yellow-100 text-yellow-800"
+      case "low":
+        return "bg-green-100 text-green-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="flex items-center space-x-2">
+              <RefreshCw className="w-5 h-5 animate-spin text-blue-600" />
+              <span className="text-gray-600">Loading analytics data...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="text-red-600 mb-2">Error loading analytics data</div>
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!metrics) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center text-gray-600">No analytics data available</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Clean Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <Button variant="ghost" size="sm" onClick={() => router.push("/marketing")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Marketing
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Marketing Analytics</h1>
+            <p className="text-gray-600">Track and analyze your marketing performance across all channels</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <select
+              value={selectedTimeframe}
+              onChange={(e) => setSelectedTimeframe(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm"
+            >
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+              <option value="1y">Last year</option>
+            </select>
+            <Button variant="outline" size="sm">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
             </Button>
           </div>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">Performance Analytics</h1>
-              <p className="text-slate-600">Track and analyze your marketing performance with AI insights</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button variant="outline" className="flex items-center">
-                <Calendar className="w-4 h-4 mr-2" />
-                Last 30 Days
-              </Button>
-              <Button className="flex items-center bg-slate-900 hover:bg-slate-800">
-                <Brain className="w-4 h-4 mr-2" />
-                AI Insights
-              </Button>
-            </div>
-          </div>
         </div>
 
-        {/* Performance Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {performanceMetrics.map((metric, index) => (
-            <Card key={index} className="border-slate-200">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                    <metric.icon className={`w-5 h-5 ${metric.color}`} />
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-slate-900">{metric.value}</div>
-                    <div className="text-sm text-slate-600">{metric.title}</div>
-                    <div className="text-xs text-green-600 font-medium">{metric.change}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-white border border-gray-200">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="channels">Channels</TabsTrigger>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Platform Performance */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle>Platform Performance</CardTitle>
-                <CardDescription>Compare performance across different social media platforms</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {platformPerformance.map((platform, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                          <span className="font-medium text-slate-900">{platform.platform.charAt(0)}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-slate-900">{platform.platform}</span>
-                          <div className="text-sm text-slate-600">{platform.posts} posts</div>
-                        </div>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Key Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Total Reach</p>
+                      <p className="text-2xl font-bold text-gray-900">{formatNumber(metrics.totalReach)}</p>
+                      <p className="text-xs text-green-600 mt-1">+{metrics.growthRate}% vs last period</p>
+                    </div>
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <Eye className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Total Engagement</p>
+                      <p className="text-2xl font-bold text-gray-900">{formatNumber(metrics.totalEngagement)}</p>
+                      <p className="text-xs text-blue-600 mt-1">{metrics.conversionRate}% engagement rate</p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <MessageSquare className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Conversions</p>
+                      <p className="text-2xl font-bold text-gray-900">{formatNumber(metrics.totalConversions)}</p>
+                      <p className="text-xs text-purple-600 mt-1">
+                        {formatCurrency(metrics.costPerConversion)} per conversion
+                      </p>
+                    </div>
+                    <div className="p-3 bg-purple-100 rounded-lg">
+                      <Target className="w-6 h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Total Spend</p>
+                      <p className="text-2xl font-bold text-gray-900">{formatCurrency(metrics.totalSpend)}</p>
+                      <p className="text-xs text-orange-600 mt-1">{metrics.averageROI}x average ROI</p>
+                    </div>
+                    <div className="p-3 bg-orange-100 rounded-lg">
+                      <DollarSign className="w-6 h-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Performance Funnel */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PerformanceFunnel
+                data={{
+                  reach: metrics.totalReach,
+                  engagement: metrics.totalEngagement,
+                  conversions: metrics.totalConversions,
+                  spend: metrics.totalSpend,
+                  roi: metrics.averageROI,
+                }}
+                title="Overall Performance Funnel"
+                showTrends={true}
+              />
+
+              <Card className="border-0 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg">Top Performers</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-green-900">Best Channel</p>
+                      <p className="text-sm text-green-700">{metrics.topPerformingChannel}</p>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">Top Reach</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-blue-900">Best Campaign</p>
+                      <p className="text-sm text-blue-700">{metrics.topPerformingCampaign}</p>
+                    </div>
+                    <Badge className="bg-blue-100 text-blue-800">Top ROI</Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-purple-900">Growth Rate</p>
+                      <p className="text-sm text-purple-700">+{metrics.growthRate}% this period</p>
+                    </div>
+                    <Badge className="bg-purple-100 text-purple-800">Trending Up</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="channels" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {metrics.channelPerformance?.map((channel, index) => (
+                <Card key={index} className="border-0 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg capitalize flex items-center justify-between">
+                      {channel.channel}
+                      <Badge variant="outline" className="bg-white">
+                        {channel.roi}x ROI
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-600">Reach:</span>
+                        <div className="font-medium">{formatNumber(channel.reach)}</div>
                       </div>
-                      <div className="flex items-center space-x-6 text-sm">
-                        <div className="text-center">
-                          <div className="font-medium text-slate-900">{platform.reach}</div>
-                          <div className="text-slate-600">Reach</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-slate-900">{platform.engagement}</div>
-                          <div className="text-slate-600">Engagement</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-green-600">{platform.roi}</div>
-                          <div className="text-slate-600">ROI</div>
-                        </div>
+                      <div>
+                        <span className="text-gray-600">Engagement:</span>
+                        <div className="font-medium">{formatNumber(channel.engagement)}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Conversions:</span>
+                        <div className="font-medium">{formatNumber(channel.conversions)}</div>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Conv. Rate:</span>
+                        <div className="font-medium">{((channel.conversions / channel.reach) * 100).toFixed(1)}%</div>
                       </div>
                     </div>
-                  ))}
+                  </CardContent>
+                </Card>
+              )) || <div className="col-span-3 text-center text-gray-600">No channel performance data available</div>}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="campaigns" className="space-y-6">
+            <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">Campaign Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center text-gray-600 py-8">
+                  Campaign performance data will be displayed here once campaigns are created and running.
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
 
-            {/* Top Performing Content */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle>Top Performing Content</CardTitle>
-                <CardDescription>Your best performing posts this month</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {topContent.map((content, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg"
-                    >
+          <TabsContent value="insights" className="space-y-6">
+            <div className="space-y-4">
+              {metrics.insights?.map((insight, index) => (
+                <Card key={index} className={`border-0 shadow-sm ${getInsightColor(insight.type)}`}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">{getInsightIcon(insight.type)}</div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-slate-900 mb-1">{content.title}</h4>
-                        <div className="flex items-center space-x-4 text-sm text-slate-600">
-                          <span>{content.platform}</span>
-                          <span>•</span>
-                          <span>{content.type}</span>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-medium">{insight.message}</h3>
+                          <Badge className={getPriorityColor(insight.priority)}>{insight.priority} priority</Badge>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-6 text-sm">
-                        <div className="text-center">
-                          <div className="font-medium text-slate-900">{content.reach}</div>
-                          <div className="text-slate-600">Reach</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-slate-900">{content.engagement}</div>
-                          <div className="text-slate-600">Engagement</div>
-                        </div>
+                        {insight.recommendation && <p className="text-sm opacity-80 mb-3">{insight.recommendation}</p>}
+                        <Button variant="outline" size="sm" className="bg-white">
+                          Take Action
+                        </Button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* AI Insights */}
-            <Card className="border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <Brain className="w-5 h-5 mr-2" />
-                  AI Insights
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 bg-white rounded-lg">
-                  <h4 className="font-medium text-sm mb-1">Peak Performance</h4>
-                  <p className="text-xs text-slate-600">Your posts perform 40% better on weekends</p>
-                </div>
-                <div className="p-3 bg-white rounded-lg">
-                  <h4 className="font-medium text-sm mb-1">Content Recommendation</h4>
-                  <p className="text-xs text-slate-600">Video content gets 3x more engagement</p>
-                </div>
-                <div className="p-3 bg-white rounded-lg">
-                  <h4 className="font-medium text-sm mb-1">Budget Optimization</h4>
-                  <p className="text-xs text-slate-600">Reallocate 20% budget to Instagram for better ROI</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg">This Month</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Posts Published</span>
-                  <span className="font-medium">24</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">New Followers</span>
-                  <span className="font-medium">+156</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Total Engagement</span>
-                  <span className="font-medium">2.1K</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Revenue Generated</span>
-                  <span className="font-medium text-green-600">₹45.2K</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Export Options */}
-            <Card className="border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg">Export Data</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start text-sm">
-                  Download PDF Report
-                </Button>
-                <Button variant="outline" className="w-full justify-start text-sm">
-                  Export to Excel
-                </Button>
-                <Button variant="outline" className="w-full justify-start text-sm">
-                  Share Report
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                  </CardContent>
+                </Card>
+              )) || (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="text-center text-gray-600">
+                      No insights available at the moment. Check back after your campaigns have been running for a
+                      while.
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

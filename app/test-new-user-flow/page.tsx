@@ -1,536 +1,689 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
 import {
+  UserPlus,
+  Settings,
+  Database,
   TestTube,
-  Play,
-  RotateCcw,
   CheckCircle,
   AlertCircle,
-  Smartphone,
-  Monitor,
-  Tablet,
-  Globe,
-  Database,
-  Zap,
-  ArrowRight,
+  Loader2,
+  Play,
+  BarChart3,
+  MessageSquare,
+  Utensils,
+  Star,
   Clock,
-  Target,
-  Sparkles,
-  Settings,
-  RefreshCw,
-  Eye,
-  Download,
+  Zap,
 } from "lucide-react"
 
+interface TestStep {
+  id: string
+  name: string
+  status: "pending" | "running" | "completed" | "failed"
+  data?: any
+  error?: string
+}
+
 export default function TestNewUserFlowPage() {
-  const router = useRouter()
-  const [testResults, setTestResults] = useState<any>({})
-  const [isRunningTests, setIsRunningTests] = useState(false)
-  const [currentTest, setCurrentTest] = useState("")
-  const [deviceView, setDeviceView] = useState("desktop")
-  const [testProgress, setTestProgress] = useState(0)
+  const [isRunning, setIsRunning] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [testSteps, setTestSteps] = useState<TestStep[]>([
+    { id: "signup", name: "User Signup", status: "pending" },
+    { id: "onboarding", name: "Restaurant Onboarding", status: "pending" },
+    { id: "data-generation", name: "AI Data Generation", status: "pending" },
+    { id: "menu-manager", name: "Menu Manager Test", status: "pending" },
+    { id: "review-manager", name: "Review Manager Test", status: "pending" },
+  ])
 
-  const testScenarios = [
-    {
-      id: "onboarding-flow",
-      name: "Complete Onboarding Flow",
-      description: "Test the full new user onboarding experience",
-      steps: [
-        "Visit onboarding page",
-        "Start journey",
-        "Complete integrations setup",
-        "Create social profile",
-        "Build menu",
-        "Set up reviews",
-      ],
-      url: "/onboarding?new=true",
-      estimatedTime: "5-10 minutes",
-    },
-    {
-      id: "social-profile",
-      name: "Social Profile Creation",
-      description: "Test social profile setup with AI generation",
-      steps: [
-        "Access social profile page",
-        "Fill basic information",
-        "Generate AI profile",
-        "Preview profile",
-        "Publish profile",
-      ],
-      url: "/profile/social-profile?onboarding=true&new=true",
-      estimatedTime: "3-5 minutes",
-    },
-    {
-      id: "menu-builder",
-      name: "Menu Builder Flow",
-      description: "Test menu creation and AI features",
-      steps: ["Access menu builder", "Upload menu file", "AI extraction", "Review and edit", "Save menu"],
-      url: "/profile/menu-builder?onboarding=true&new=true",
-      estimatedTime: "5-8 minutes",
-    },
-    {
-      id: "review-management",
-      name: "Review Management Setup",
-      description: "Test review monitoring and AI responses",
-      steps: [
-        "Access review management",
-        "Connect platforms",
-        "Set up AI responses",
-        "Test notifications",
-        "Configure settings",
-      ],
-      url: "/profile/reviews?onboarding=true&new=true",
-      estimatedTime: "3-5 minutes",
-    },
-  ]
+  const [testData, setTestData] = useState({
+    email: "test@newrestaurant.com",
+    restaurantName: "Bella Vista Italiana",
+    cuisine: "Italian",
+    type: "Fine Dining",
+    priceRange: "$$$",
+    address: "123 Main Street, Downtown, City 12345",
+    phone: "+1-555-0199",
+    website: "www.bellavista.com",
+    description: "Authentic Italian cuisine with a modern twist, featuring fresh ingredients and traditional recipes.",
+    tagline: "Where tradition meets innovation",
+  })
 
-  const systemChecks = [
-    {
-      id: "database",
-      name: "Database Connection",
-      description: "Test Supabase connection and data operations",
-      icon: Database,
-    },
-    {
-      id: "ai-services",
-      name: "AI Services",
-      description: "Test OpenAI, Fal, and other AI integrations",
-      icon: Zap,
-    },
-    {
-      id: "file-processing",
-      name: "File Processing",
-      description: "Test file upload and processing capabilities",
-      icon: Settings,
-    },
-    {
-      id: "api-endpoints",
-      name: "API Endpoints",
-      description: "Test all API routes and functionality",
-      icon: Globe,
-    },
-  ]
+  const [userId, setUserId] = useState<string>("")
+  const [restaurantId, setRestaurantId] = useState<string>("")
 
-  const deviceSizes = [
-    { id: "mobile", name: "Mobile", icon: Smartphone, width: "375px" },
-    { id: "tablet", name: "Tablet", icon: Tablet, width: "768px" },
-    { id: "desktop", name: "Desktop", icon: Monitor, width: "100%" },
-  ]
+  const updateStepStatus = (stepId: string, status: TestStep["status"], data?: any, error?: string) => {
+    setTestSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, status, data, error } : step)))
+  }
 
-  // Run system health checks
-  const runSystemChecks = async () => {
-    setIsRunningTests(true)
-    setCurrentTest("Running system health checks...")
-    setTestProgress(0)
+  const runCompleteTest = async () => {
+    setIsRunning(true)
+    setCurrentStep(0)
 
     try {
-      const results: any = {}
+      // Step 1: Test User Signup
+      setCurrentStep(1)
+      updateStepStatus("signup", "running")
 
-      // Test database connection
-      setCurrentTest("Testing database connection...")
-      setTestProgress(25)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      results.database = { status: "success", message: "Database connection successful" }
-
-      // Test AI services
-      setCurrentTest("Testing AI services...")
-      setTestProgress(50)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      results.aiServices = { status: "success", message: "AI services operational" }
-
-      // Test file processing
-      setCurrentTest("Testing file processing...")
-      setTestProgress(75)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      results.fileProcessing = { status: "success", message: "File processing ready" }
-
-      // Test API endpoints
-      setCurrentTest("Testing API endpoints...")
-      setTestProgress(100)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      results.apiEndpoints = { status: "success", message: "All endpoints responding" }
-
-      setTestResults(results)
-
-      toast({
-        title: "System Checks Complete ✅",
-        description: "All systems are operational and ready for testing",
+      const signupResponse = await fetch("/api/test-user-flow/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          testUserEmail: testData.email,
+          restaurantName: testData.restaurantName,
+        }),
       })
+
+      const signupData = await signupResponse.json()
+
+      if (signupData.success) {
+        updateStepStatus("signup", "completed", signupData.data)
+        setUserId(signupData.data.userId)
+        setRestaurantId(signupData.data.profile.id)
+        toast({
+          title: "✅ Signup Successful",
+          description: `User created with AI welcome message`,
+        })
+      } else {
+        throw new Error(signupData.details || "Signup failed")
+      }
+
+      // Step 2: Test Onboarding
+      setCurrentStep(2)
+      updateStepStatus("onboarding", "running")
+
+      const onboardingResponse = await fetch("/api/test-user-flow/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: signupData.data.userId,
+          restaurantData: testData,
+        }),
+      })
+
+      const onboardingData = await onboardingResponse.json()
+
+      if (onboardingData.success) {
+        updateStepStatus("onboarding", "completed", onboardingData.data)
+        toast({
+          title: "✅ Onboarding Complete",
+          description: "Profile setup with AI business insights",
+        })
+      } else {
+        throw new Error(onboardingData.details || "Onboarding failed")
+      }
+
+      // Step 3: Test AI Data Generation
+      setCurrentStep(3)
+      updateStepStatus("data-generation", "running")
+
+      const dataGenResponse = await fetch("/api/test-user-flow/data-generation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: signupData.data.userId,
+          restaurantId: signupData.data.profile.id,
+        }),
+      })
+
+      const dataGenData = await dataGenResponse.json()
+
+      if (dataGenData.success) {
+        updateStepStatus("data-generation", "completed", dataGenData.data)
+        toast({
+          title: "✅ AI Data Generated",
+          description: `Created ${dataGenData.data.generated.menuItems} menu items and ${dataGenData.data.generated.reviews} reviews`,
+        })
+      } else {
+        throw new Error(dataGenData.details || "Data generation failed")
+      }
+
+      // Step 4: Test Menu Manager
+      setCurrentStep(4)
+      updateStepStatus("menu-manager", "running")
+
+      const menuTestResponse = await fetch("/api/test-app-features/menu-manager", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantId: signupData.data.profile.id,
+        }),
+      })
+
+      const menuTestData = await menuTestResponse.json()
+
+      if (menuTestData.success) {
+        updateStepStatus("menu-manager", "completed", menuTestData.data)
+        toast({
+          title: "✅ Menu Manager Tested",
+          description: "All AI menu features working correctly",
+        })
+      } else {
+        throw new Error(menuTestData.details || "Menu manager test failed")
+      }
+
+      // Step 5: Test Review Manager
+      setCurrentStep(5)
+      updateStepStatus("review-manager", "running")
+
+      const reviewTestResponse = await fetch("/api/test-app-features/review-manager", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantId: signupData.data.profile.id,
+        }),
+      })
+
+      const reviewTestData = await reviewTestResponse.json()
+
+      if (reviewTestData.success) {
+        updateStepStatus("review-manager", "completed", reviewTestData.data)
+        toast({
+          title: "🎉 All Tests Completed!",
+          description: "New user flow and all features tested successfully",
+        })
+      } else {
+        throw new Error(reviewTestData.details || "Review manager test failed")
+      }
     } catch (error) {
+      const failedStep = testSteps[currentStep - 1]
+      if (failedStep) {
+        updateStepStatus(failedStep.id, "failed", null, error instanceof Error ? error.message : "Unknown error")
+      }
+
       toast({
-        title: "System Check Failed",
-        description: "Some systems may not be functioning correctly",
+        title: "❌ Test Failed",
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive",
       })
     } finally {
-      setIsRunningTests(false)
-      setCurrentTest("")
-      setTestProgress(0)
+      setIsRunning(false)
+      setCurrentStep(0)
     }
   }
 
-  // Clear browser storage
-  const clearBrowserStorage = () => {
-    try {
-      localStorage.clear()
-      sessionStorage.clear()
-
-      // Clear cookies (if possible)
-      document.cookie.split(";").forEach((c) => {
-        const eqPos = c.indexOf("=")
-        const name = eqPos > -1 ? c.substr(0, eqPos) : c
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
-      })
-
-      toast({
-        title: "Storage Cleared ✅",
-        description: "Browser storage has been cleared for fresh testing",
-      })
-    } catch (error) {
-      toast({
-        title: "Clear Failed",
-        description: "Could not clear all browser storage",
-        variant: "destructive",
-      })
+  const getStepIcon = (status: TestStep["status"]) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="w-5 h-5 text-green-600" />
+      case "running":
+        return <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+      case "failed":
+        return <AlertCircle className="w-5 h-5 text-red-600" />
+      default:
+        return <Clock className="w-5 h-5 text-gray-400" />
     }
   }
 
-  // Start automated test
-  const startAutomatedTest = async (scenario: any) => {
-    setIsRunningTests(true)
-    setCurrentTest(`Running ${scenario.name}...`)
-
-    try {
-      // Clear storage first
-      clearBrowserStorage()
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Navigate to test URL
-      window.open(scenario.url, "_blank")
-
-      toast({
-        title: "Test Started 🚀",
-        description: `${scenario.name} test opened in new tab`,
-      })
-    } catch (error) {
-      toast({
-        title: "Test Failed",
-        description: "Could not start automated test",
-        variant: "destructive",
-      })
-    } finally {
-      setIsRunningTests(false)
-      setCurrentTest("")
+  const getStepColor = (status: TestStep["status"]) => {
+    switch (status) {
+      case "completed":
+        return "border-green-200 bg-green-50"
+      case "running":
+        return "border-blue-200 bg-blue-50"
+      case "failed":
+        return "border-red-200 bg-red-50"
+      default:
+        return "border-gray-200 bg-gray-50"
     }
   }
 
-  // Generate test report
-  const generateTestReport = () => {
-    const report = {
-      timestamp: new Date().toISOString(),
-      systemChecks: testResults,
-      testScenarios: testScenarios.map((scenario) => ({
-        ...scenario,
-        status: "pending",
-      })),
-      environment: {
-        userAgent: navigator.userAgent,
-        viewport: `${window.innerWidth}x${window.innerHeight}`,
-        url: window.location.href,
-      },
-    }
-
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `tablesalt-test-report-${Date.now()}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-
-    toast({
-      title: "Report Generated 📊",
-      description: "Test report has been downloaded",
-    })
-  }
+  const completedSteps = testSteps.filter((step) => step.status === "completed").length
+  const progressPercentage = (completedSteps / testSteps.length) * 100
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <TestTube className="w-8 h-8 mr-3 text-blue-600" />
-                New User Flow Testing
-              </h1>
-              <p className="text-gray-600 mt-2">Comprehensive testing suite for the restaurant onboarding experience</p>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Button onClick={clearBrowserStorage} variant="outline">
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Clear Storage
-              </Button>
-              <Button onClick={runSystemChecks} disabled={isRunningTests}>
-                {isRunningTests ? (
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Play className="w-4 h-4 mr-2" />
-                )}
-                Run System Checks
-              </Button>
-              <Button onClick={generateTestReport} variant="outline">
-                <Download className="w-4 h-4 mr-2" />
-                Generate Report
-              </Button>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          {isRunningTests && (
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">{currentTest}</span>
-                <span className="text-sm text-gray-500">{testProgress}%</span>
-              </div>
-              <Progress value={testProgress} className="h-2" />
-            </div>
-          )}
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">New User Flow Testing</h1>
+          <p className="text-gray-600">
+            Complete end-to-end testing of new user signup, onboarding, and AI feature functionality
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* System Health Checks */}
-          <div className="lg:col-span-1">
+        <Tabs defaultValue="setup" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="setup">Setup</TabsTrigger>
+            <TabsTrigger value="testing">Testing</TabsTrigger>
+            <TabsTrigger value="results">Results</TabsTrigger>
+            <TabsTrigger value="insights">AI Insights</TabsTrigger>
+          </TabsList>
+
+          {/* Setup Tab */}
+          <TabsContent value="setup" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Settings className="w-5 h-5 mr-2" />
-                  System Health
+                  Test Configuration
                 </CardTitle>
-                <CardDescription>Check all system components</CardDescription>
+                <CardDescription>Configure the test restaurant data for comprehensive testing</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {systemChecks.map((check) => (
-                  <div key={check.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <check.icon className="w-5 h-5 text-gray-600" />
-                      <div>
-                        <div className="font-medium text-sm">{check.name}</div>
-                        <div className="text-xs text-gray-600">{check.description}</div>
-                      </div>
-                    </div>
-                    {testResults[check.id] ? (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-gray-400" />
-                    )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="email">Test Email</Label>
+                    <Input
+                      id="email"
+                      value={testData.email}
+                      onChange={(e) => setTestData((prev) => ({ ...prev, email: e.target.value }))}
+                    />
                   </div>
-                ))}
+                  <div>
+                    <Label htmlFor="restaurantName">Restaurant Name</Label>
+                    <Input
+                      id="restaurantName"
+                      value={testData.restaurantName}
+                      onChange={(e) => setTestData((prev) => ({ ...prev, restaurantName: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cuisine">Cuisine Type</Label>
+                    <Input
+                      id="cuisine"
+                      value={testData.cuisine}
+                      onChange={(e) => setTestData((prev) => ({ ...prev, cuisine: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="type">Restaurant Type</Label>
+                    <Input
+                      id="type"
+                      value={testData.type}
+                      onChange={(e) => setTestData((prev) => ({ ...prev, type: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="priceRange">Price Range</Label>
+                    <Input
+                      id="priceRange"
+                      value={testData.priceRange}
+                      onChange={(e) => setTestData((prev) => ({ ...prev, priceRange: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={testData.phone}
+                      onChange={(e) => setTestData((prev) => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+                </div>
 
-                <Button onClick={runSystemChecks} disabled={isRunningTests} className="w-full">
-                  {isRunningTests ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Play className="w-4 h-4 mr-2" />
-                  )}
-                  Run All Checks
-                </Button>
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={testData.address}
+                    onChange={(e) => setTestData((prev) => ({ ...prev, address: e.target.value }))}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={testData.description}
+                    onChange={(e) => setTestData((prev) => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
               </CardContent>
             </Card>
 
-            {/* Device Testing */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Smartphone className="w-5 h-5 mr-2" />
-                  Device Testing
-                </CardTitle>
-                <CardDescription>Test responsive design</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-2">
-                  {deviceSizes.map((device) => (
-                    <Button
-                      key={device.id}
-                      onClick={() => setDeviceView(device.id)}
-                      variant={deviceView === device.id ? "default" : "outline"}
-                      className="justify-start"
-                    >
-                      <device.icon className="w-4 h-4 mr-2" />
-                      {device.name}
-                    </Button>
-                  ))}
-                </div>
-
-                <div className="text-xs text-gray-600">
-                  Current viewport: {deviceSizes.find((d) => d.id === deviceView)?.width}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Test Scenarios */}
-          <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Target className="w-5 h-5 mr-2" />
-                  Test Scenarios
-                </CardTitle>
-                <CardDescription>Automated testing for key user flows</CardDescription>
+                <CardTitle>Test Overview</CardTitle>
+                <CardDescription>What will be tested in this flow</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {testScenarios.map((scenario) => (
-                  <div key={scenario.id} className="border rounded-lg p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{scenario.name}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{scenario.description}</p>
-                        <div className="flex items-center space-x-4 mt-2">
-                          <Badge variant="outline" className="text-xs">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {scenario.estimatedTime}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {scenario.steps.length} steps
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <UserPlus className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                    <h3 className="font-semibold text-blue-900">User Signup</h3>
+                    <p className="text-sm text-blue-700">Account creation & AI welcome</p>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <Settings className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                    <h3 className="font-semibold text-green-900">Onboarding</h3>
+                    <p className="text-sm text-green-700">Profile setup & AI insights</p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <Database className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                    <h3 className="font-semibold text-purple-900">Data Generation</h3>
+                    <p className="text-sm text-purple-700">AI-powered mock data</p>
+                  </div>
+                  <div className="text-center p-4 bg-orange-50 rounded-lg">
+                    <Utensils className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                    <h3 className="font-semibold text-orange-900">Menu Manager</h3>
+                    <p className="text-sm text-orange-700">AI menu analysis & optimization</p>
+                  </div>
+                  <div className="text-center p-4 bg-pink-50 rounded-lg">
+                    <MessageSquare className="w-8 h-8 text-pink-600 mx-auto mb-2" />
+                    <h3 className="font-semibold text-pink-900">Review Manager</h3>
+                    <p className="text-sm text-pink-700">AI sentiment & response generation</p>
+                  </div>
+                  <div className="text-center p-4 bg-indigo-50 rounded-lg">
+                    <BarChart3 className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
+                    <h3 className="font-semibold text-indigo-900">Analytics</h3>
+                    <p className="text-sm text-indigo-700">Performance metrics & insights</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Testing Tab */}
+          <TabsContent value="testing" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <TestTube className="w-5 h-5 mr-2" />
+                      Test Execution
+                    </CardTitle>
+                    <CardDescription>Running comprehensive new user flow testing</CardDescription>
+                  </div>
+                  <Button
+                    onClick={runCompleteTest}
+                    disabled={isRunning}
+                    className="bg-black hover:bg-gray-800 text-white"
+                  >
+                    {isRunning ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Testing...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 mr-2" />
+                        Run Complete Test
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>Overall Progress</span>
+                      <span>
+                        {completedSteps}/{testSteps.length} completed
+                      </span>
+                    </div>
+                    <Progress value={progressPercentage} className="h-2" />
+                  </div>
+
+                  <div className="space-y-3">
+                    {testSteps.map((step, index) => (
+                      <div key={step.id} className={`p-4 rounded-lg border-2 ${getStepColor(step.status)}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            {getStepIcon(step.status)}
+                            <div>
+                              <h3 className="font-medium">{step.name}</h3>
+                              {step.status === "running" && <p className="text-sm text-blue-600">Processing...</p>}
+                              {step.status === "completed" && (
+                                <p className="text-sm text-green-600">Completed successfully</p>
+                              )}
+                              {step.status === "failed" && <p className="text-sm text-red-600">{step.error}</p>}
+                            </div>
+                          </div>
+                          <Badge
+                            variant={
+                              step.status === "completed"
+                                ? "default"
+                                : step.status === "running"
+                                  ? "secondary"
+                                  : step.status === "failed"
+                                    ? "destructive"
+                                    : "outline"
+                            }
+                          >
+                            {step.status}
                           </Badge>
                         </div>
                       </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Button onClick={() => window.open(scenario.url, "_blank")} variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-1" />
-                          Preview
-                        </Button>
-                        <Button onClick={() => startAutomatedTest(scenario)} disabled={isRunningTests} size="sm">
-                          <Play className="w-4 h-4 mr-1" />
-                          Test
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Test Steps */}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm text-gray-700">Test Steps:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {scenario.steps.map((step, index) => (
-                          <div key={index} className="flex items-center space-x-2 text-sm text-gray-600">
-                            <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-xs font-medium">
-                              {index + 1}
-                            </div>
-                            <span>{step}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <Separator />
-
-                {/* Quick Actions */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Quick Actions</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button onClick={() => router.push("/onboarding?new=true")} className="justify-start h-auto p-4">
-                      <div className="text-left">
-                        <div className="font-medium">Start Fresh Onboarding</div>
-                        <div className="text-xs opacity-80">Begin new user experience</div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 ml-auto" />
-                    </Button>
-
-                    <Button
-                      onClick={() => router.push("/profile/social-profile?onboarding=true&new=true")}
-                      variant="outline"
-                      className="justify-start h-auto p-4"
-                    >
-                      <div className="text-left">
-                        <div className="font-medium">Test Social Profile</div>
-                        <div className="text-xs opacity-80">Direct profile creation</div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 ml-auto" />
-                    </Button>
-
-                    <Button
-                      onClick={() => router.push("/profile/menu-builder?onboarding=true&new=true")}
-                      variant="outline"
-                      className="justify-start h-auto p-4"
-                    >
-                      <div className="text-left">
-                        <div className="font-medium">Test Menu Builder</div>
-                        <div className="text-xs opacity-80">Menu creation flow</div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 ml-auto" />
-                    </Button>
-
-                    <Button
-                      onClick={() => router.push("/profile/reviews?onboarding=true&new=true")}
-                      variant="outline"
-                      className="justify-start h-auto p-4"
-                    >
-                      <div className="text-left">
-                        <div className="font-medium">Test Review Management</div>
-                        <div className="text-xs opacity-80">Review setup flow</div>
-                      </div>
-                      <ArrowRight className="w-4 h-4 ml-auto" />
-                    </Button>
+                    ))}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </TabsContent>
 
-        {/* Testing Instructions */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Sparkles className="w-5 h-5 mr-2" />
-              Testing Instructions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">1. System Check</h4>
-                <p className="text-sm text-gray-600">
-                  Run system health checks to ensure all services are operational before testing user flows.
-                </p>
+          {/* Results Tab */}
+          <TabsContent value="results" className="space-y-6">
+            {testSteps.some((step) => step.status === "completed") ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {testSteps
+                  .filter((step) => step.status === "completed" && step.data)
+                  .map((step) => (
+                    <Card key={step.id}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
+                          {step.name} Results
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {step.id === "signup" && step.data && (
+                            <>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">User ID</span>
+                                <span className="font-mono text-sm">{step.data.userId}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Restaurant</span>
+                                <span className="font-medium">{step.data.profile.restaurant_name}</span>
+                              </div>
+                              <div className="p-3 bg-blue-50 rounded">
+                                <p className="text-sm font-medium text-blue-900 mb-1">AI Welcome Message:</p>
+                                <p className="text-sm text-blue-800">
+                                  {step.data.welcomeContent?.substring(0, 200)}...
+                                </p>
+                              </div>
+                            </>
+                          )}
+
+                          {step.id === "data-generation" && step.data && (
+                            <>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-green-600">
+                                    {step.data.generated.menuItems}
+                                  </div>
+                                  <div className="text-sm text-gray-600">Menu Items</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-blue-600">{step.data.generated.reviews}</div>
+                                  <div className="text-sm text-gray-600">Reviews</div>
+                                </div>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">Average Rating</span>
+                                <div className="flex items-center">
+                                  <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                                  <span className="font-medium">{step.data.generated.averageRating?.toFixed(1)}</span>
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {step.id === "menu-manager" && step.data && (
+                            <>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-purple-600">
+                                    {step.data.menuMetrics.totalItems}
+                                  </div>
+                                  <div className="text-sm text-gray-600">Total Items</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-orange-600">
+                                    ${step.data.menuMetrics.averagePrice?.toFixed(2)}
+                                  </div>
+                                  <div className="text-sm text-gray-600">Avg Price</div>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                {Object.entries(step.data.testResults).map(([key, value]) => (
+                                  <div key={key} className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-600 capitalize">
+                                      {key.replace(/([A-Z])/g, " $1").trim()}
+                                    </span>
+                                    {value ? (
+                                      <CheckCircle className="w-4 h-4 text-green-600" />
+                                    ) : (
+                                      <AlertCircle className="w-4 h-4 text-red-600" />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
+
+                          {step.id === "review-manager" && step.data && (
+                            <>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-blue-600">
+                                    {step.data.reviewMetrics.totalReviews}
+                                  </div>
+                                  <div className="text-sm text-gray-600">Total Reviews</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-yellow-600">
+                                    {step.data.reviewMetrics.averageRating?.toFixed(1)}
+                                  </div>
+                                  <div className="text-sm text-gray-600">Avg Rating</div>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                {Object.entries(step.data.testResults).map(([key, value]) => (
+                                  <div key={key} className="flex items-center justify-between">
+                                    <span className="text-sm text-gray-600 capitalize">
+                                      {key.replace(/([A-Z])/g, " $1").trim()}
+                                    </span>
+                                    {value ? (
+                                      <CheckCircle className="w-4 h-4 text-green-600" />
+                                    ) : (
+                                      <AlertCircle className="w-4 h-4 text-red-600" />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
               </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">2. Clear Storage</h4>
-                <p className="text-sm text-gray-600">
-                  Clear browser storage before each test to simulate a fresh user experience.
-                </p>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <TestTube className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Results Yet</h3>
+                  <p className="text-gray-600 mb-4">Run the complete test to see detailed results</p>
+                  <Button onClick={() => document.querySelector('[value="testing"]')?.click()}>
+                    <Play className="w-4 h-4 mr-2" />
+                    Go to Testing
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* AI Insights Tab */}
+          <TabsContent value="insights" className="space-y-6">
+            {testSteps.some((step) => step.data?.aiAnalysis || step.data?.aiInsights) ? (
+              <div className="space-y-6">
+                {testSteps
+                  .filter((step) => step.data?.aiAnalysis || step.data?.aiInsights)
+                  .map((step) => (
+                    <Card key={step.id}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Zap className="w-5 h-5 mr-2 text-purple-600" />
+                          {step.name} - AI Insights
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {step.data.aiAnalysis && (
+                            <>
+                              {step.data.aiAnalysis.menuAnalysis && (
+                                <div className="p-4 bg-blue-50 rounded-lg">
+                                  <h4 className="font-medium text-blue-900 mb-2">Menu Analysis</h4>
+                                  <p className="text-sm text-blue-800">
+                                    {step.data.aiAnalysis.menuAnalysis.substring(0, 300)}...
+                                  </p>
+                                </div>
+                              )}
+
+                              {step.data.aiAnalysis.topicAnalysis && (
+                                <div className="p-4 bg-green-50 rounded-lg">
+                                  <h4 className="font-medium text-green-900 mb-2">Review Topic Analysis</h4>
+                                  <p className="text-sm text-green-800">
+                                    {step.data.aiAnalysis.topicAnalysis.substring(0, 300)}...
+                                  </p>
+                                </div>
+                              )}
+
+                              {step.data.aiAnalysis.improvementRecommendations && (
+                                <div className="p-4 bg-orange-50 rounded-lg">
+                                  <h4 className="font-medium text-orange-900 mb-2">Improvement Recommendations</h4>
+                                  <p className="text-sm text-orange-800">
+                                    {step.data.aiAnalysis.improvementRecommendations.substring(0, 300)}...
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          )}
+
+                          {step.data.aiInsights && (
+                            <div className="p-4 bg-purple-50 rounded-lg">
+                              <h4 className="font-medium text-purple-900 mb-2">Customer Insights</h4>
+                              <p className="text-sm text-purple-800">
+                                {JSON.stringify(step.data.aiInsights).substring(0, 300)}...
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
               </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">3. Test Scenarios</h4>
-                <p className="text-sm text-gray-600">
-                  Run each test scenario to validate the complete user journey from start to finish.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">4. Device Testing</h4>
-                <p className="text-sm text-gray-600">
-                  Test on different device sizes to ensure responsive design works correctly.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            ) : (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No AI Insights Yet</h3>
+                  <p className="text-gray-600 mb-4">Run the complete test to see AI-generated insights and analysis</p>
+                  <Button onClick={() => document.querySelector('[value="testing"]')?.click()}>
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Testing
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

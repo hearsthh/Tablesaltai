@@ -1,277 +1,218 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useState } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LinkIcon } from "lucide-react"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Menu, X, BarChart3, Building, Target, Users, PieChart, Sparkles, Star, Clock, MapPin } from "lucide-react"
 
 interface NavigationProps {
-  variant?: "default" | "minimal"
-  title?: string
+  restaurantName?: string
+  location?: string
+  avgRating?: number
+  className?: string
 }
 
-export function Navigation({ variant = "default", title }: NavigationProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [connectionPercentage, setConnectionPercentage] = useState(0)
+export function Navigation({
+  restaurantName = "Tasty Biryani",
+  location = "Mumbai, Maharashtra",
+  avgRating = 4.7,
+  className,
+}: NavigationProps) {
+  const router = useRouter()
   const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [currentTime] = useState(new Date())
 
-  useEffect(() => {
-    const connectedIntegrations = 0
-    const totalIntegrations = 8
-    setConnectionPercentage(Math.round((connectedIntegrations / totalIntegrations) * 100))
-  }, [])
-
-  const getIntegrationColor = (percentage: number) => {
-    if (percentage === 0) return "text-gray-400"
-    if (percentage < 40) return "text-red-500"
-    if (percentage < 70) return "text-yellow-500"
-    return "text-green-500"
-  }
-
-  const mainNavItems = [
-    {
-      title: "Dashboard",
-      href: "/dashboard",
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
-        </svg>
-      ),
-    },
-    {
-      title: "Profile",
-      href: "/profile",
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-          />
-        </svg>
-      ),
-      subItems: [
-        { title: "Smart Profile", href: "/profile/smart-profile" },
-        { title: "Social Profile", href: "/profile/social-profile" },
-        { title: "Menu Builder", href: "/profile/menu-builder" },
-        { title: "Reviews", href: "/profile/reviews" },
-        { title: "Integrations", href: "/profile/integrations" },
-      ],
-    },
-    {
-      title: "Marketing",
-      href: "/marketing",
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
-      subItems: [
-        { title: "Campaigns", href: "/marketing/campaigns" },
-        { title: "Content", href: "/marketing/content" },
-        { title: "Calendar", href: "/marketing/calendar" },
-        { title: "Analytics", href: "/marketing/analytics" },
-      ],
-    },
-    {
-      title: "Customers",
-      href: "/customers",
-      icon: (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-          />
-        </svg>
-      ),
-      subItems: [
-        { title: "Profiles", href: "/customers/profiles" },
-        { title: "Segmentation", href: "/customers/segmentation" },
-        { title: "Insights", href: "/customers/insights" },
-        { title: "Churn Analysis", href: "/customers/churn" },
-      ],
-    },
+  const navigationItems = [
+    { name: "Dashboard", route: "/dashboard", icon: BarChart3 },
+    { name: "Profile", route: "/profile", icon: Building },
+    { name: "Marketing", route: "/marketing", icon: Target },
+    { name: "Customers", route: "/customers", icon: Users },
+    { name: "Analytics", route: "/analytics", icon: PieChart },
   ]
 
-  if (variant === "minimal") {
-    return (
-      <nav className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/dashboard" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
-                    />
-                  </svg>
-                </div>
-                <span className="font-semibold text-gray-900">TableSalt AI</span>
-              </Link>
-              {title && (
-                <>
-                  <span className="text-gray-400">/</span>
-                  <span className="text-gray-600 font-medium">{title}</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-2">
-                <LinkIcon className="w-4 h-4 text-gray-400" />
-                <span className={`text-sm font-medium ${getIntegrationColor(connectionPercentage)}`}>
-                  {connectionPercentage}%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    )
+  const isActiveRoute = (route: string) => {
+    if (route === "/dashboard") {
+      return pathname === "/dashboard" || pathname === "/"
+    }
+    return pathname.startsWith(route)
   }
 
-  return (
-    <nav className="border-b border-gray-200 bg-white sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <Link href="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
-                  />
-                </svg>
-              </div>
-              <span className="font-semibold text-gray-900">TableSalt AI</span>
-            </Link>
+  const handleNavigation = (route: string) => {
+    router.push(route)
+    setIsMobileMenuOpen(false)
+  }
+
+  const NavigationContent = () => (
+    <div className="space-y-4">
+      {/* Restaurant Info */}
+      <div className="pb-4 border-b border-gray-200">
+        <div className="flex items-center space-x-3 mb-2">
+          <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
-
-          <div className="hidden md:flex items-center space-x-1">
-            {mainNavItems.map((item) => {
-              const isActive = pathname.startsWith(item.href)
-
-              return (
-                <Link key={item.title} href={item.href}>
-                  <Button
-                    variant="ghost"
-                    className={`flex items-center space-x-2 text-sm ${
-                      isActive ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    {item.icon}
-                    <span>{item.title}</span>
-                  </Button>
-                </Link>
-              )
-            })}
-          </div>
-
-          <div className="hidden md:flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <LinkIcon className="w-4 h-4 text-gray-400" />
-              <span className={`text-sm font-medium ${getIntegrationColor(connectionPercentage)}`}>
-                {connectionPercentage}%
-              </span>
-            </div>
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </Button>
-          </div>
-
-          <div className="md:hidden">
-            <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </Button>
+          <div>
+            <h2 className="font-semibold text-gray-900">{restaurantName}</h2>
+            <p className="text-xs text-gray-600">TableSalt AI Platform</p>
           </div>
         </div>
+        <div className="space-y-1 text-xs text-gray-600">
+          <div className="flex items-center space-x-1">
+            <MapPin className="w-3 h-3" />
+            <span>{location}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Star className="w-3 h-3 text-yellow-500" />
+            <span>{avgRating} average rating</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Clock className="w-3 h-3" />
+            <span>Last sync: {currentTime.toLocaleTimeString()}</span>
+          </div>
+        </div>
+      </div>
 
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <div className="space-y-2">
-              {mainNavItems.map((item) => {
-                const isActive = pathname.startsWith(item.href)
+      {/* Navigation Items */}
+      <nav className="space-y-1">
+        {navigationItems.map((item) => {
+          const Icon = item.icon
+          const isActive = isActiveRoute(item.route)
 
-                return (
-                  <div key={item.title}>
-                    <Link href={item.href}>
-                      <Button
-                        variant="ghost"
-                        className={`w-full justify-start ${isActive ? "bg-gray-100 text-gray-900" : "text-gray-600"}`}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <span className="mr-2">{item.icon}</span>
-                        {item.title}
-                      </Button>
-                    </Link>
-                    {item.subItems && isActive && (
-                      <div className="ml-6 mt-1 space-y-1">
-                        {item.subItems.map((subItem) => (
-                          <Link key={subItem.href} href={subItem.href}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start text-gray-500 hover:text-gray-900"
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              {subItem.title}
-                            </Button>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+          return (
+            <Button
+              key={item.name}
+              variant={isActive ? "default" : "ghost"}
+              className={`w-full justify-start space-x-3 ${
+                isActive ? "bg-black text-white hover:bg-gray-800" : "text-gray-600 hover:text-black hover:bg-gray-100"
+              }`}
+              onClick={() => handleNavigation(item.route)}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{item.name}</span>
+            </Button>
+          )
+        })}
+      </nav>
 
-              <div className="pt-4 border-t border-gray-200">
-                <div className="flex items-center space-x-2">
-                  <LinkIcon className="w-4 h-4 text-gray-400" />
-                  <span className={`text-sm font-medium ${getIntegrationColor(connectionPercentage)}`}>
-                    {connectionPercentage}%
-                  </span>
-                </div>
+      {/* Quick Stats */}
+      <div className="pt-4 border-t border-gray-200">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center p-2 bg-gray-50 rounded-lg">
+            <div className="text-sm font-bold text-gray-900">47</div>
+            <div className="text-xs text-gray-600">Orders Today</div>
+          </div>
+          <div className="text-center p-2 bg-gray-50 rounded-lg">
+            <div className="text-sm font-bold text-gray-900">3.2%</div>
+            <div className="text-xs text-gray-600">CTR (7d)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <>
+      {/* Desktop Navigation */}
+      <div className={`bg-white border-b border-gray-200 sticky top-0 z-50 ${className}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and Brand */}
+            <div className="flex items-center space-x-4">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-black">TableSalt AI</h1>
+                <p className="text-xs text-gray-600 hidden sm:block">Restaurant Growth Platform</p>
               </div>
             </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon
+                const isActive = isActiveRoute(item.route)
+
+                return (
+                  <Button
+                    key={item.name}
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    className={`flex items-center space-x-2 ${
+                      isActive
+                        ? "bg-black text-white hover:bg-gray-800"
+                        : "text-gray-600 hover:text-black hover:bg-gray-100"
+                    }`}
+                    onClick={() => handleNavigation(item.route)}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.name}</span>
+                  </Button>
+                )
+              })}
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-semibold text-gray-900">Navigation</h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <NavigationContent />
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Status Indicator */}
+            <div className="hidden md:flex items-center space-x-3">
+              <div className="text-right">
+                <p className="text-sm font-medium text-black">{currentTime.toLocaleTimeString()}</p>
+                <p className="text-xs text-gray-500">Live Dashboard</p>
+              </div>
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
-    </nav>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+        <div className="grid grid-cols-5 gap-1 p-2">
+          {navigationItems.map((item) => {
+            const Icon = item.icon
+            const isActive = isActiveRoute(item.route)
+
+            return (
+              <Button
+                key={item.name}
+                variant="ghost"
+                size="sm"
+                className={`flex flex-col items-center space-y-1 h-12 ${isActive ? "text-black" : "text-gray-600"}`}
+                onClick={() => handleNavigation(item.route)}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="text-xs">{item.name}</span>
+                {isActive && <div className="w-1 h-1 bg-black rounded-full"></div>}
+              </Button>
+            )
+          })}
+        </div>
+      </div>
+    </>
   )
 }
