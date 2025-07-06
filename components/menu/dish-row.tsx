@@ -1,8 +1,5 @@
-"use client"
-
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Star, TrendingUp, TrendingDown, Edit, MoreHorizontal } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus, Leaf, Flame } from "lucide-react"
 
 interface DishRowProps {
   name: string
@@ -14,8 +11,6 @@ interface DishRowProps {
   trend: "up" | "down" | "stable"
   isVegetarian?: boolean
   isSpicy?: boolean
-  onEdit?: () => void
-  onViewDetails?: () => void
 }
 
 export function DishRow({
@@ -26,17 +21,19 @@ export function DishRow({
   orders,
   revenue,
   trend,
-  isVegetarian,
-  isSpicy,
-  onEdit,
-  onViewDetails,
+  isVegetarian = false,
+  isSpicy = false,
 }: DishRowProps) {
+  const formatCurrency = (amount: number) => `₹${amount.toLocaleString()}`
+
   const getTrendIcon = () => {
     switch (trend) {
       case "up":
         return <TrendingUp className="h-4 w-4 text-green-600" />
       case "down":
         return <TrendingDown className="h-4 w-4 text-red-600" />
+      case "stable":
+        return <Minus className="h-4 w-4 text-gray-600" />
       default:
         return null
     }
@@ -48,64 +45,61 @@ export function DishRow({
         return "text-green-600"
       case "down":
         return "text-red-600"
+      case "stable":
+        return "text-gray-600"
       default:
-        return "text-gray-500"
+        return "text-gray-600"
     }
   }
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center space-x-2 mb-1">
-          <h4 className="font-medium text-black truncate">{name}</h4>
-          {isVegetarian && (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              Veg
-            </Badge>
-          )}
-          {isSpicy && (
-            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-              Spicy
-            </Badge>
-          )}
-        </div>
-        <div className="flex items-center space-x-4 text-sm text-gray-600">
-          <span>{category}</span>
-          <span>₹{price}</span>
-          <div className="flex items-center space-x-1">
-            <Star className="h-3 w-3 text-yellow-500 fill-current" />
-            <span>{rating.toFixed(1)}</span>
+    <div className="flex items-center justify-between py-4 hover:bg-gray-50 transition-colors">
+      <div className="flex-1">
+        <div className="flex items-center space-x-3">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-1">
+              <h4 className="font-medium text-black">{name}</h4>
+              {isVegetarian && (
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                  <Leaf className="h-3 w-3 mr-1" />
+                  Veg
+                </Badge>
+              )}
+              {isSpicy && (
+                <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">
+                  <Flame className="h-3 w-3 mr-1" />
+                  Spicy
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <span>{category}</span>
+              <span>•</span>
+              <span>{formatCurrency(price)}</span>
+              <span>•</span>
+              <div className="flex items-center space-x-1">
+                <span>⭐</span>
+                <span>{rating}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center space-x-6">
-        <div className="text-center">
-          <div className="font-semibold text-black">{orders}</div>
-          <div className="text-xs text-gray-500">Orders</div>
+      <div className="flex items-center space-x-8">
+        <div className="text-right">
+          <div className="text-sm font-medium text-black">{orders} orders</div>
+          <div className="text-xs text-gray-500">this month</div>
         </div>
 
-        <div className="text-center">
-          <div className="font-semibold text-black">₹{revenue.toLocaleString()}</div>
-          <div className="text-xs text-gray-500">Revenue</div>
+        <div className="text-right">
+          <div className="text-sm font-medium text-black">{formatCurrency(revenue)}</div>
+          <div className="text-xs text-gray-500">revenue</div>
         </div>
 
-        <div className="flex items-center space-x-1">
+        <div className={`flex items-center space-x-1 ${getTrendColor()}`}>
           {getTrendIcon()}
-          <span className={`text-sm font-medium ${getTrendColor()}`}>{trend === "stable" ? "—" : trend}</span>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {onEdit && (
-            <Button variant="ghost" size="sm" onClick={onEdit}>
-              <Edit className="h-4 w-4" />
-            </Button>
-          )}
-          {onViewDetails && (
-            <Button variant="ghost" size="sm" onClick={onViewDetails}>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          )}
+          <span className="text-sm font-medium capitalize">{trend}</span>
         </div>
       </div>
     </div>
