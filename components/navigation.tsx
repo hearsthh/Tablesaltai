@@ -3,157 +3,187 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { ChefHat, Menu, Home, Users, BarChart3, MessageSquare, Settings, User, Bell, Search } from "lucide-react"
+import {
+  BarChart3,
+  Menu,
+  Utensils,
+  Users,
+  MessageSquare,
+  Megaphone,
+  Settings,
+  Home,
+  TestTube,
+  Database,
+} from "lucide-react"
 
-const navigationItems = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Profile", href: "/profile", icon: User },
+const navigation = [
+  { name: "Dashboard", href: "/new-dashboard", icon: Home },
+  { name: "Menu", href: "/menu", icon: Utensils },
   { name: "Customers", href: "/customers", icon: Users },
-  { name: "Marketing", href: "/marketing", icon: MessageSquare },
+  { name: "Reviews", href: "/reviews", icon: MessageSquare },
+  { name: "Marketing", href: "/marketing", icon: Megaphone },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
-export function Navigation() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const pathname = usePathname()
+const testingNavigation = [
+  { name: "Test Real Data", href: "/test-real-data", icon: Database },
+  { name: "Test AI Features", href: "/test-ai-features", icon: TestTube },
+]
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/")
+export function Navigation() {
+  const pathname = usePathname()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <>
-      {/* Desktop Header */}
-      <header className="hidden md:flex sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link href="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                <ChefHat className="h-5 w-5 text-white" />
+    <nav className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link href="/new-dashboard" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                <Utensils className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-black">TableSalt AI</span>
+              <span className="text-xl font-bold text-gray-900">RestaurantAI</span>
             </Link>
+          </div>
 
-            {/* Desktop Navigation */}
-            <nav className="flex items-center space-x-8">
-              {navigationItems.map((item) => (
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navigation.map((item) => {
+              const Icon = item.icon
+              return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(item.href) ? "bg-black text-white" : "text-gray-600 hover:text-black hover:bg-gray-100"
-                  }`}
+                  className={cn(
+                    "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    pathname === item.href
+                      ? "bg-orange-100 text-orange-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+                  )}
                 >
-                  <item.icon className="h-4 w-4" />
+                  <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
                 </Link>
-              ))}
-            </nav>
+              )
+            })}
 
-            {/* Desktop Actions */}
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
-                <Search className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm">
-                <User className="h-4 w-4 mr-2" />
-                Profile
-              </Button>
+            {/* Testing Section */}
+            <div className="border-l pl-4 ml-4">
+              {testingNavigation.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ml-2",
+                      pathname === item.href
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.name}</span>
+                  </Link>
+                )
+              })}
             </div>
           </div>
-        </div>
-      </header>
 
-      {/* Mobile Header */}
-      <header className="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-        <div className="flex justify-between items-center h-16 px-4">
-          {/* Logo */}
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-              <ChefHat className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-black">TableSalt AI</span>
-          </Link>
-
-          {/* Mobile Menu Trigger */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-80">
-              <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                      <ChefHat className="h-5 w-5 text-white" />
-                    </div>
-                    <span className="text-xl font-bold text-black">TableSalt AI</span>
-                  </div>
-                </div>
-
-                {/* Navigation */}
-                <nav className="flex-1 py-6">
-                  <div className="space-y-2">
-                    {navigationItems.map((item) => (
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="w-6 h-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-64">
+                <div className="flex flex-col space-y-4 mt-8">
+                  {navigation.map((item) => {
+                    const Icon = item.icon
+                    return (
                       <Link
                         key={item.name}
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                          isActive(item.href)
-                            ? "bg-black text-white"
-                            : "text-gray-600 hover:text-black hover:bg-gray-100"
-                        }`}
+                        className={cn(
+                          "flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                          pathname === item.href
+                            ? "bg-orange-100 text-orange-700"
+                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+                        )}
                       >
-                        <item.icon className="h-5 w-5" />
+                        <Icon className="w-5 h-5" />
                         <span>{item.name}</span>
                       </Link>
-                    ))}
+                    )
+                  })}
+
+                  <div className="border-t pt-4">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 mb-2">Testing</p>
+                    {testingNavigation.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            "flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                            pathname === item.href
+                              ? "bg-blue-100 text-blue-700"
+                              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+                          )}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span>{item.name}</span>
+                        </Link>
+                      )
+                    })}
                   </div>
-                </nav>
-
-                {/* Footer Actions */}
-                <div className="border-t border-gray-200 pt-4 space-y-2">
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
-                    <Bell className="h-4 w-4 mr-2" />
-                    Notifications
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start bg-transparent">
-                    <User className="h-4 w-4 mr-2" />
-                    Profile Settings
-                  </Button>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-      </header>
+      </div>
+    </nav>
+  )
+}
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200">
-        <div className="grid grid-cols-5 gap-1 p-2">
-          {navigationItems.slice(0, 5).map((item) => (
+export function MobileBottomNavigation() {
+  const pathname = usePathname()
+
+  const bottomNavItems = navigation.slice(0, 5)
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
+      <div className="grid grid-cols-5 gap-1 p-2">
+        {bottomNavItems.map((item) => {
+          const Icon = item.icon
+          return (
             <Link
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg text-xs font-medium transition-colors ${
-                isActive(item.href) ? "bg-black text-white" : "text-gray-600 hover:text-black hover:bg-gray-100"
-              }`}
+              className={cn(
+                "flex flex-col items-center justify-center p-2 rounded-lg text-xs",
+                pathname === item.href
+                  ? "bg-orange-100 text-orange-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+              )}
             >
-              <item.icon className="h-5 w-5 mb-1" />
+              <Icon className="w-5 h-5 mb-1" />
               <span className="truncate">{item.name}</span>
             </Link>
-          ))}
-        </div>
+          )
+        })}
       </div>
-    </>
+    </div>
   )
 }

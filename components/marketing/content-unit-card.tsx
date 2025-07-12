@@ -27,22 +27,9 @@ export function ContentUnitCard({
   platform,
   engagement,
 }: ContentUnitCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-        return "bg-green-100 text-green-800 border-green-200"
-      case "scheduled":
-        return "bg-blue-100 text-blue-800 border-blue-200"
-      case "draft":
-        return "bg-gray-100 text-gray-800 border-gray-200"
-      case "archived":
-        return "bg-red-100 text-red-800 border-red-200"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
-    }
-  }
-
   const getTypeColor = (type: string) => {
+    if (!type) return "bg-gray-50 text-gray-700 border-gray-200"
+
     switch (type) {
       case "post":
         return "bg-blue-50 text-blue-700 border-blue-200"
@@ -56,6 +43,23 @@ export function ContentUnitCard({
         return "bg-yellow-50 text-yellow-700 border-yellow-200"
       default:
         return "bg-gray-50 text-gray-700 border-gray-200"
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    if (!status) return "bg-gray-100 text-gray-800 border-gray-200"
+
+    switch (status) {
+      case "published":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "scheduled":
+        return "bg-blue-100 text-blue-800 border-blue-200"
+      case "draft":
+        return "bg-gray-100 text-gray-800 border-gray-200"
+      case "archived":
+        return "bg-red-100 text-red-800 border-red-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
@@ -86,10 +90,10 @@ export function ContentUnitCard({
             <CardTitle className="text-lg font-semibold text-black mb-2">{title}</CardTitle>
             <div className="flex items-center space-x-2 mb-3">
               <Badge variant="outline" className={getTypeColor(type)}>
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {type ? type.charAt(0).toUpperCase() + type.slice(1) : "Content"}
               </Badge>
               <Badge variant="outline" className={getStatusColor(status)}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {status ? status.charAt(0).toUpperCase() + status.slice(1) : "Unknown"}
               </Badge>
             </div>
             <div className="flex items-center space-x-2">

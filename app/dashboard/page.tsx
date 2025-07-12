@@ -1,310 +1,352 @@
 "use client"
 
-import { Navigation } from "@/components/navigation"
-import { KpiCard } from "@/components/dashboard/kpi-card"
-import { ChannelPill } from "@/components/marketing/channel-pill"
-import { CampaignCard } from "@/components/marketing/campaign-card"
-import { ContentUnitCard } from "@/components/marketing/content-unit-card"
-import { DishRow } from "@/components/menu/dish-row"
-import { useRestaurantData } from "@/hooks/use-restaurant-data"
-import { useMarketingData } from "@/hooks/use-marketing-data"
-import { useCustomerData } from "@/hooks/use-customer-data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import {
-  ChefHat,
-  Users,
-  Star,
   TrendingUp,
+  TrendingDown,
+  Users,
+  DollarSign,
+  Star,
   MessageSquare,
-  BarChart3,
-  Plus,
-  ArrowRight,
-  Calendar,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Sparkles,
   Target,
-  Zap,
+  Calendar,
 } from "lucide-react"
 
-export default function DashboardPage() {
-  const { data: restaurantData, loading: restaurantLoading } = useRestaurantData()
-  const { data: marketingData, loading: marketingLoading } = useMarketingData()
-  const { data: customerData, loading: customerLoading } = useCustomerData()
+// Static data for fast loading in v0 preview
+const staticData = {
+  kpis: [
+    {
+      title: "Monthly Revenue",
+      value: "₹4,50,000",
+      change: "+12.5%",
+      trend: "up" as const,
+      icon: DollarSign,
+    },
+    {
+      title: "Total Orders",
+      value: "1,247",
+      change: "+8.2%",
+      trend: "up" as const,
+      icon: Users,
+    },
+    {
+      title: "Average Rating",
+      value: "4.3",
+      change: "+0.2",
+      trend: "up" as const,
+      icon: Star,
+    },
+    {
+      title: "Response Rate",
+      value: "94%",
+      change: "-2.1%",
+      trend: "down" as const,
+      icon: MessageSquare,
+    },
+  ],
+  tasks: [
+    {
+      id: "1",
+      title: "Respond to 3 new reviews",
+      priority: "high" as const,
+      dueDate: "Today",
+      completed: false,
+    },
+    {
+      id: "2",
+      title: "Update weekend menu specials",
+      priority: "medium" as const,
+      dueDate: "Tomorrow",
+      completed: false,
+    },
+    {
+      id: "3",
+      title: "Review marketing campaign performance",
+      priority: "low" as const,
+      dueDate: "This week",
+      completed: true,
+    },
+  ],
+  insights: [
+    {
+      title: "Peak Hours Optimization",
+      description: "Your busiest hours are 7-9 PM. Consider adding staff during this time.",
+      type: "opportunity" as const,
+      impact: "high" as const,
+    },
+    {
+      title: "Menu Item Performance",
+      description: "Butter Chicken is your top performer with 234 orders this month.",
+      type: "success" as const,
+      impact: "medium" as const,
+    },
+    {
+      title: "Review Response Needed",
+      description: "You have 3 unresponded reviews from the last 48 hours.",
+      type: "warning" as const,
+      impact: "high" as const,
+    },
+  ],
+  recentActivity: [
+    {
+      id: "1",
+      action: "New 5-star review received",
+      time: "2 hours ago",
+      type: "review",
+    },
+    {
+      id: "2",
+      action: "Marketing campaign launched",
+      time: "4 hours ago",
+      type: "marketing",
+    },
+    {
+      id: "3",
+      action: "Menu item updated",
+      time: "6 hours ago",
+      type: "menu",
+    },
+  ],
+}
 
-  if (restaurantLoading || marketingLoading || customerLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
-          </div>
-        </div>
-      </div>
-    )
+export default function DashboardPage() {
+  const handleCompleteTask = (taskId: string) => {
+    console.log("Task completed:", taskId)
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-800"
+      case "medium":
+        return "bg-yellow-100 text-yellow-800"
+      case "low":
+        return "bg-green-100 text-green-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getInsightIcon = (type: string) => {
+    switch (type) {
+      case "opportunity":
+        return <Target className="w-5 h-5 text-blue-600" />
+      case "success":
+        return <CheckCircle className="w-5 h-5 text-green-600" />
+      case "warning":
+        return <AlertCircle className="w-5 h-5 text-yellow-600" />
+      default:
+        return <Sparkles className="w-5 h-5 text-purple-600" />
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Navigation />
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-black mb-2">
-                Welcome back, {restaurantData?.profile.name || "Restaurant Owner"}!
-              </h1>
-              <p className="text-gray-600">Here's what's happening with your restaurant today.</p>
-            </div>
-            <div className="mt-4 md:mt-0 flex space-x-3">
-              <Button variant="outline">
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Content
-              </Button>
-              <Button className="bg-black hover:bg-gray-800 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                New Campaign
-              </Button>
-            </div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your restaurant.</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" size="sm">
+              <Calendar className="w-4 h-4 mr-2" />
+              This Month
+            </Button>
+            <Button size="sm">
+              <Sparkles className="w-4 h-4 mr-2" />
+              AI Insights
+            </Button>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <KpiCard
-            title="Monthly Revenue"
-            value={`₹${restaurantData?.profile.monthlyRevenue.toLocaleString()}`}
-            change={restaurantData?.profile.revenueChange}
-            changeType="increase"
-            icon={<TrendingUp className="h-4 w-4" />}
-          />
-          <KpiCard
-            title="Today's Orders"
-            value={restaurantData?.performance.ordersToday}
-            change={restaurantData?.performance.ordersChange}
-            changeType="increase"
-            icon={<ChefHat className="h-4 w-4" />}
-          />
-          <KpiCard
-            title="Customer Rating"
-            value={restaurantData?.profile.rating}
-            subtitle={`${restaurantData?.profile.totalReviews} reviews`}
-            icon={<Star className="h-4 w-4" />}
-          />
-          <KpiCard
-            title="Avg Order Value"
-            value={`₹${restaurantData?.performance.avgOrderValue}`}
-            change={restaurantData?.performance.avgOrderValueChange}
-            changeType="decrease"
-            icon={<BarChart3 className="h-4 w-4" />}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {staticData.kpis.map((kpi, index) => {
+            const Icon = kpi.icon
+            return (
+              <Card key={index} className="relative overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">{kpi.title}</CardTitle>
+                  <Icon className="h-4 w-4 text-gray-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">{kpi.value}</div>
+                  <div className="flex items-center mt-1">
+                    {kpi.trend === "up" ? (
+                      <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    <span className={`text-sm font-medium ${kpi.trend === "up" ? "text-green-600" : "text-red-600"}`}>
+                      {kpi.change}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-1">vs last month</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
-        {/* Quick Actions */}
-        <Card className="mb-8 bg-white border-gray-200">
-          <CardHeader>
-            <CardTitle className="flex items-center text-black">
-              <Zap className="h-5 w-5 mr-2" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>Common tasks to boost your restaurant's performance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-start space-y-2 bg-transparent">
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="h-5 w-5 text-blue-600" />
-                  <span className="font-medium">Create Social Post</span>
-                </div>
-                <p className="text-sm text-gray-600 text-left">Generate AI-powered social media content</p>
-              </Button>
-
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-start space-y-2 bg-transparent">
-                <div className="flex items-center space-x-2">
-                  <Target className="h-5 w-5 text-green-600" />
-                  <span className="font-medium">Launch Campaign</span>
-                </div>
-                <p className="text-sm text-gray-600 text-left">Start a new marketing campaign</p>
-              </Button>
-
-              <Button variant="outline" className="h-auto p-4 flex flex-col items-start space-y-2 bg-transparent">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-5 w-5 text-purple-600" />
-                  <span className="font-medium">Analyze Customers</span>
-                </div>
-                <p className="text-sm text-gray-600 text-left">Get insights on customer behavior</p>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Marketing Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Platform Connections */}
-          <Card className="bg-white border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-black">Platform Connections</CardTitle>
-              <CardDescription>Your restaurant's online presence</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {marketingData?.channels.map((channel) => (
-                  <ChannelPill key={channel.name} name={channel.name} status={channel.status} count={channel.count} />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Customer Segments */}
-          <Card className="bg-white border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-black">Customer Segments</CardTitle>
-              <CardDescription>Your customer base breakdown</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {customerData?.segments.map((segment) => (
-                  <div key={segment.name} className="flex items-center justify-between">
-                    <div>
-                      <span className="font-medium text-black">{segment.name}</span>
-                      <span className="text-sm text-gray-500 ml-2">({segment.count})</span>
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Tasks and Insights */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Tasks */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" />
+                  Today's Tasks
+                </CardTitle>
+                <CardDescription>Complete these tasks to optimize your restaurant performance</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {staticData.tasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className={`flex items-center justify-between p-4 rounded-lg border ${
+                      task.completed ? "bg-green-50 border-green-200" : "bg-white border-gray-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 ${
+                          task.completed ? "bg-green-500 border-green-500" : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      />
+                      <div>
+                        <p className={`font-medium ${task.completed ? "line-through text-gray-500" : "text-gray-900"}`}>
+                          {task.title}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+                          <span className="text-sm text-gray-500 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {task.dueDate}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline">{segment.percentage}%</Badge>
-                      <span className={`text-sm ${segment.growth > 0 ? "text-green-600" : "text-red-600"}`}>
-                        {segment.growth > 0 ? "+" : ""}
-                        {segment.growth}%
-                      </span>
+                    {!task.completed && (
+                      <Button size="sm" variant="outline" onClick={() => handleCompleteTask(task.id)}>
+                        Complete
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* AI Insights */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5" />
+                  AI Insights
+                </CardTitle>
+                <CardDescription>Personalized recommendations to grow your business</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {staticData.insights.map((insight, index) => (
+                  <div key={index} className="flex gap-3 p-4 rounded-lg bg-gray-50">
+                    {getInsightIcon(insight.type)}
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{insight.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{insight.description}</p>
+                      <Badge className="mt-2" variant="secondary">
+                        {insight.impact} impact
+                      </Badge>
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Menu Completion</span>
+                    <span className="font-medium">85%</span>
+                  </div>
+                  <Progress value={85} className="h-2" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Profile Optimization</span>
+                    <span className="font-medium">92%</span>
+                  </div>
+                  <Progress value={92} className="h-2" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Review Response Rate</span>
+                    <span className="font-medium">78%</span>
+                  </div>
+                  <Progress value={78} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {staticData.recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                        <p className="text-xs text-gray-500">{activity.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Respond to Reviews
+                </Button>
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate Content
+                </Button>
+                <Button className="w-full justify-start bg-transparent" variant="outline">
+                  <Target className="w-4 h-4 mr-2" />
+                  Create Campaign
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        {/* Active Campaigns */}
-        <Card className="mb-8 bg-white border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-black">Active Campaigns</CardTitle>
-              <CardDescription>Your current marketing campaigns</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              View All <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {marketingData?.campaigns.slice(0, 2).map((campaign) => (
-                <CampaignCard
-                  key={campaign.id}
-                  title={campaign.title}
-                  description={campaign.description}
-                  status={campaign.status}
-                  budget={campaign.budget}
-                  spent={campaign.spent}
-                  startDate={campaign.startDate}
-                  endDate={campaign.endDate}
-                  performance={campaign.performance}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Content */}
-        <Card className="mb-8 bg-white border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-black">Recent Content</CardTitle>
-              <CardDescription>Your latest content pieces</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              Create New <Plus className="h-4 w-4 ml-2" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {marketingData?.contentUnits.slice(0, 2).map((content) => (
-                <ContentUnitCard
-                  key={content.id}
-                  title={content.title}
-                  type={content.type}
-                  status={content.status}
-                  scheduledDate={content.scheduledDate}
-                  publishedDate={content.publishedDate}
-                  platform={content.platform}
-                  engagement={content.engagement}
-                />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Menu Items */}
-        <Card className="bg-white border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-black">Top Performing Menu Items</CardTitle>
-              <CardDescription>Your best-selling dishes this month</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              View Full Menu <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-0 divide-y divide-gray-100">
-              <DishRow
-                name="Butter Chicken"
-                category="Main Course"
-                price={320}
-                rating={4.8}
-                orders={156}
-                revenue={49920}
-                trend="up"
-                isVegetarian={false}
-                isSpicy={true}
-              />
-              <DishRow
-                name="Paneer Tikka Masala"
-                category="Main Course"
-                price={280}
-                rating={4.6}
-                orders={134}
-                revenue={37520}
-                trend="up"
-                isVegetarian={true}
-                isSpicy={true}
-              />
-              <DishRow
-                name="Biryani Special"
-                category="Rice"
-                price={350}
-                rating={4.7}
-                orders={98}
-                revenue={34300}
-                trend="stable"
-                isVegetarian={false}
-                isSpicy={false}
-              />
-              <DishRow
-                name="Dal Makhani"
-                category="Main Course"
-                price={220}
-                rating={4.5}
-                orders={87}
-                revenue={19140}
-                trend="down"
-                isVegetarian={true}
-                isSpicy={false}
-              />
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

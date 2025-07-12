@@ -1,1905 +1,1505 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "@/components/ui/use-toast"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
-import { Progress } from "@/components/ui/progress"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { toast } from "@/components/ui/use-toast"
 import {
-  Heart,
-  Flame,
-  Leaf,
-  Coffee,
-  Utensils,
-  Upload,
-  BarChart3,
-  Sparkles,
-  Eye,
   Plus,
-  ArrowRight,
-  ChefHat,
   Edit,
   Trash2,
   Search,
-  Download,
-  Copy,
-  Globe,
   Grid3X3,
-  TrendingUp,
-  Target,
+  List,
+  Download,
+  Upload,
+  Zap,
   DollarSign,
+  Eye,
   Star,
-  AlertTriangle,
+  Clock,
+  ChefHat,
+  Utensils,
+  Leaf,
+  Flame,
+  Snowflake,
+  ImageIcon,
   Save,
-  ExternalLink,
-  ArrowUpRight,
-  Palette,
-  Move,
-  FileText,
+  Share,
+  Printer,
+  Smartphone,
+  Monitor,
+  Layout,
+  RefreshCw,
+  Lightbulb,
+  BarChart3,
 } from "lucide-react"
-import MenuExtractModal from "@/components/ai/menu-extract-modal"
-import MenuContentGenerator from "@/components/ai/menu-content-generator"
-import ContentHistoryTimeline from "@/components/ai/content-history-timeline"
-import GeneratedContentViewer from "@/components/ai/generated-content-viewer"
+import { useRouter, useSearchParams } from "next/navigation"
 
-// Empty state for new users
-const emptyMenuData = {
-  categories: [],
+interface MenuItem {
+  id: string
+  name: string
+  description: string
+  price: number
+  category_id: string
+  is_available: boolean
+  dietary_info?: string[]
+  prep_time?: number
+  calories?: number
+  image_url?: string
+  popularity_score?: number
+  profit_margin?: number
 }
 
-// Mock data for existing users
-const mockMenuData = {
-  categories: [
-    {
-      id: "1",
-      name: "Appetizers",
-      description: "Start your meal with our delicious appetizers",
-      items: [
-        {
-          id: "1",
-          name: "Samosa Chaat",
-          description: "Crispy samosas topped with tangy chutneys and yogurt",
-          price: 8.99,
-          image: "/placeholder.svg?height=80&width=80",
-          available: true,
-          inStock: true,
-          tasteTags: ["spicy", "vegetarian"],
-          promoTags: ["popular", "signature"],
-          insights: {
-            sales: "high",
-            pricing: "underpriced",
-            trend: "increasing",
-            suggestions: ["Consider raising price by $1", "Add to combo offers"],
-          },
-        },
-        {
-          id: "2",
-          name: "Chicken Wings",
-          description: "Spicy buffalo wings with blue cheese dip",
-          price: 12.99,
-          image: "/placeholder.svg?height=80&width=80",
-          available: true,
-          inStock: false,
-          tasteTags: ["spicy", "non-vegetarian"],
-          promoTags: ["popular"],
-          insights: {
-            sales: "low",
-            pricing: "overpriced",
-            trend: "declining",
-          },
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "Main Course",
-      description: "Our signature main dishes",
-      items: [
-        {
-          id: "7",
-          name: "Butter Chicken",
-          description: "Tender chicken in rich tomato cream sauce",
-          price: 16.99,
-          image: "/placeholder.svg?height=80&width=80",
-          available: true,
-          inStock: true,
-          tasteTags: ["mild", "non-vegetarian", "creamy"],
-          promoTags: ["signature", "chef-special"],
-          insights: {
-            sales: "high",
-            pricing: "optimal",
-            trend: "stable",
-          },
-        },
-        {
-          id: "8",
-          name: "Palak Paneer",
-          description: "Cottage cheese in creamy spinach curry",
-          price: 14.99,
-          image: "/placeholder.svg?height=80&width=80",
-          available: true,
-          inStock: true,
-          tasteTags: ["mild", "vegetarian", "healthy"],
-          promoTags: ["popular"],
-          insights: {
-            sales: "medium",
-            pricing: "optimal",
-            trend: "increasing",
-          },
-        },
-      ],
-    },
-  ],
+interface MenuCategory {
+  id: string
+  name: string
+  description: string
+  display_order: number
+  items: MenuItem[]
 }
 
-const tasteTagsConfig = {
-  spicy: { label: "Spicy", icon: Flame, color: "bg-red-50 text-red-600 border-red-200" },
-  mild: { label: "Mild", icon: Coffee, color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
-  vegetarian: { label: "Veg", icon: Leaf, color: "bg-green-50 text-green-600 border-green-200" },
-  vegan: { label: "Vegan", icon: Leaf, color: "bg-green-50 text-green-700 border-green-300" },
-  "non-vegetarian": { label: "Non-Veg", icon: Utensils, color: "bg-orange-50 text-orange-600 border-orange-200" },
-  healthy: { label: "Healthy", icon: Heart, color: "bg-pink-50 text-pink-600 border-pink-200" },
-  creamy: { label: "Creamy", icon: Coffee, color: "bg-amber-50 text-amber-600 border-amber-200" },
+interface MenuAnalytics {
+  totalItems: number
+  totalCategories: number
+  averagePrice: number
+  popularItems: MenuItem[]
+  revenueByCategory: { [key: string]: number }
+  profitMargins: { [key: string]: number }
 }
-
-const promoTagsConfig = {
-  popular: { label: "Popular", color: "bg-blue-50 text-blue-600 border-blue-200" },
-  "top-rated": { label: "Top Rated", color: "bg-purple-50 text-purple-600 border-purple-200" },
-  signature: { label: "Signature", color: "bg-indigo-50 text-indigo-600 border-indigo-200" },
-  "must-try": { label: "Must Try", color: "bg-pink-50 text-pink-600 border-pink-200" },
-  "kids-special": { label: "Kids", color: "bg-cyan-50 text-cyan-600 border-cyan-200" },
-  "chef-special": { label: "Chef's", color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
-}
-
-const connectedPlatforms = [
-  { id: "google", name: "Google My Business", connected: true, icon: Globe },
-  { id: "zomato", name: "Zomato", connected: true, icon: Utensils },
-  { id: "swiggy", name: "Swiggy", connected: true, icon: Utensils },
-  { id: "facebook", name: "Facebook", connected: true, icon: Globe },
-  { id: "petpooja", name: "PetPooja POS", connected: true, icon: BarChart3 },
-]
 
 export default function MenuBuilderPage() {
+  const [activeTab, setActiveTab] = useState("menu")
+  const [categories, setCategories] = useState<MenuCategory[]>([])
+  const [analytics, setAnalytics] = useState<MenuAnalytics | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
+  const [showItemDialog, setShowItemDialog] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { toast: useToastHook } = useToast()
   const isOnboarding = searchParams.get("onboarding") === "true"
-  const isNewUser = searchParams.get("new") === "true" || isOnboarding
 
-  // Use empty data for new users, mock data for existing users
-  const [menuData, setMenuData] = useState(isNewUser ? emptyMenuData : mockMenuData)
-  const [showExtractModal, setShowExtractModal] = useState(false)
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [showEditCategory, setShowEditCategory] = useState(false)
-  const [showEditItem, setShowEditItem] = useState(false)
-  const [activeTab, setActiveTab] = useState("menu")
-  const [insightsTab, setInsightsTab] = useState("insights")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterAvailable, setFilterAvailable] = useState<boolean | null>(null)
-  const [refreshHistory, setRefreshHistory] = useState(0)
-  const [showPreview, setShowPreview] = useState(false)
-  const [generatedContent, setGeneratedContent] = useState<any>(null)
-  const [showGeneratedContent, setShowGeneratedContent] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<any>(null)
-  const [editingItem, setEditingItem] = useState<any>(null)
-  const [newCategory, setNewCategory] = useState({ name: "", description: "" })
-  const [newItem, setNewItem] = useState({
+  // State management
+  // const [activeTab, setActiveTab] = useState("builder")
+  // const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  // const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  // const [searchQuery, setSearchQuery] = useState("")
+  const [isGeneratingMenu, setIsGeneratingMenu] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showAddItemDialog, setShowAddItemDialog] = useState(false)
+  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false)
+  // const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
+  const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null)
+  const [hasMenuData, setHasMenuData] = useState(false)
+  const [showAIFeatures, setShowAIFeatures] = useState(false)
+
+  // Form states
+  const [newItem, setNewItem] = useState<Partial<MenuItem>>({
     name: "",
     description: "",
-    price: "",
-    available: true,
-    inStock: true,
-    tasteTags: [],
-    promoTags: [],
+    price: 0,
+    category_id: "",
+    is_available: true,
   })
-  const [insightsData, setInsightsData] = useState<any>(null)
-  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false)
 
-  const handleContentApplied = (content: any, appliedData: any) => {
-    switch (content.content_type) {
-      case "combos":
-        const comboCategory = {
-          id: `combo_${Date.now()}`,
-          name: "Combo Meals",
-          description: "Value combo meals with great savings",
-          items: appliedData.map((combo: any, index: number) => ({
-            id: `combo_item_${Date.now()}_${index}`,
-            name: combo.name,
-            description: combo.description,
-            price: combo.price,
-            available: true,
-            inStock: true,
-            tasteTags: ["combo"],
-            promoTags: ["value", "popular"],
-            comboItems: combo.items,
-          })),
-        }
+  const [newCategory, setNewCategory] = useState({
+    name: "",
+    description: "",
+    displayOrder: 0,
+    isActive: true,
+  })
 
-        setMenuData((prevData) => ({
-          ...prevData,
-          categories: [...prevData.categories, comboCategory],
-        }))
+  // Mock data
+  // const [menuCategories, setMenuCategories] = useState<MenuCategory[]>([
+  //   {
+  //     id: "appetizers",
+  //     name: "Appetizers",
+  //     description: "Start your meal with our delicious appetizers",
+  //     displayOrder: 1,
+  //     isActive: true,
+  //     items: [
+  //       {
+  //         id: "bruschetta",
+  //         name: "Classic Bruschetta",
+  //         description: "Toasted bread topped with fresh tomatoes, basil, and garlic",
+  //         price: 12.99,
+  //         category: "appetizers",
+  //         image: "/placeholder.svg?height=200&width=300",
+  //         isVegetarian: true,
+  //         isPopular: true,
+  //         availability: "available",
+  //         preparationTime: 10,
+  //         nutritionInfo: { calories: 180, protein: 6, carbs: 25, fat: 8 },
+  //         tags: ["fresh", "italian", "classic"],
+  //       },
+  //       {
+  //         id: "calamari",
+  //         name: "Crispy Calamari",
+  //         description: "Golden fried squid rings served with marinara sauce",
+  //         price: 15.99,
+  //         category: "appetizers",
+  //         image: "/placeholder.svg?height=200&width=300",
+  //         availability: "available",
+  //         preparationTime: 12,
+  //         nutritionInfo: { calories: 320, protein: 18, carbs: 22, fat: 18 },
+  //         tags: ["seafood", "crispy", "popular"],
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: "mains",
+  //     name: "Main Courses",
+  //     description: "Our signature main dishes",
+  //     displayOrder: 2,
+  //     isActive: true,
+  //     items: [
+  //       {
+  //         id: "pasta-carbonara",
+  //         name: "Pasta Carbonara",
+  //         description: "Creamy pasta with pancetta, eggs, and parmesan cheese",
+  //         price: 18.99,
+  //         category: "mains",
+  //         image: "/placeholder.svg?height=200&width=300",
+  //         isPopular: true,
+  //         availability: "available",
+  //         preparationTime: 15,
+  //         nutritionInfo: { calories: 580, protein: 24, carbs: 65, fat: 28 },
+  //         tags: ["pasta", "creamy", "italian"],
+  //       },
+  //       {
+  //         id: "grilled-salmon",
+  //         name: "Grilled Atlantic Salmon",
+  //         description: "Fresh salmon fillet with lemon herb butter and seasonal vegetables",
+  //         price: 26.99,
+  //         category: "mains",
+  //         image: "/placeholder.svg?height=200&width=300",
+  //         isGlutenFree: true,
+  //         availability: "available",
+  //         preparationTime: 20,
+  //         nutritionInfo: { calories: 420, protein: 35, carbs: 12, fat: 26 },
+  //         tags: ["seafood", "healthy", "grilled"],
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     id: "desserts",
+  //     name: "Desserts",
+  //     description: "Sweet endings to your meal",
+  //     displayOrder: 3,
+  //     isActive: true,
+  //     items: [
+  //       {
+  //         id: "tiramisu",
+  //         name: "Classic Tiramisu",
+  //         description: "Traditional Italian dessert with coffee-soaked ladyfingers and mascarpone",
+  //         price: 8.99,
+  //         category: "desserts",
+  //         image: "/placeholder.svg?height=200&width=300",
+  //         isVegetarian: true,
+  //         isPopular: true,
+  //         availability: "available",
+  //         preparationTime: 5,
+  //         nutritionInfo: { calories: 380, protein: 8, carbs: 35, fat: 22 },
+  //         tags: ["italian", "coffee", "classic"],
+  //       },
+  //     ],
+  //   },
+  // ])
 
-        toast({
-          title: "🍽️ Combos Added!",
-          description: `${appliedData.length} combo meals have been added to your menu`,
-        })
-        break
+  // const [menuAnalytics] = useState<MenuAnalytics>({
+  //   totalItems: 5,
+  //   totalCategories: 3,
+  //   popularItems: [
+  //     {
+  //       id: "pasta-carbonara",
+  //       name: "Pasta Carbonara",
+  //       description: "Creamy pasta with pancetta, eggs, and parmesan cheese",
+  //       price: 18.99,
+  //       category: "mains",
+  //       isPopular: true,
+  //       availability: "available",
+  //     },
+  //     {
+  //       id: "bruschetta",
+  //       name: "Classic Bruschetta",
+  //       description: "Toasted bread topped with fresh tomatoes, basil, and garlic",
+  //       price: 12.99,
+  //       category: "appetizers",
+  //       isVegetarian: true,
+  //       isPopular: true,
+  //       availability: "available",
+  //     },
+  //   ],
+  //   revenueByCategory: [
+  //     { category: "Main Courses", revenue: 15420, percentage: 65 },
+  //     { category: "Appetizers", revenue: 5680, percentage: 24 },
+  //     { category: "Desserts", revenue: 2600, percentage: 11 },
+  //   ],
+  //   performanceMetrics: {
+  //     avgRating: 4.6,
+  //     totalOrders: 1247,
+  //     revenueGrowth: 12.5,
+  //     customerFavorites: 8,
+  //   },
+  //   recommendations: [
+  //     {
+  //       id: "rec-1",
+  //       type: "pricing",
+  //       title: "Optimize Appetizer Pricing",
+  //       description: "Consider increasing appetizer prices by 8-12% based on demand analysis",
+  //       impact: "Medium",
+  //       effort: "Low",
+  //     },
+  //     {
+  //       id: "rec-2",
+  //       type: "description",
+  //       title: "Enhance Item Descriptions",
+  //       description: "Add more sensory details to main course descriptions to increase appeal",
+  //       impact: "High",
+  //       effort: "Low",
+  //     },
+  //     {
+  //       id: "rec-3",
+  //       type: "category",
+  //       title: "Add Beverage Category",
+  //       description: "Create a dedicated beverage section to increase average order value",
+  //       impact: "High",
+  //       effort: "Medium",
+  //     },
+  //   ],
+  // })
 
-      case "seasonal-menu":
-        const seasonalCategory = {
-          id: `seasonal_${Date.now()}`,
-          name: "Seasonal Specials",
-          description: "Limited-time seasonal offerings",
-          items: appliedData.map((item: any, index: number) => ({
-            id: `seasonal_item_${Date.now()}_${index}`,
-            name: item.name,
-            description: item.description,
-            price: item.price,
-            available: true,
-            inStock: true,
-            tasteTags: item.tags || ["seasonal"],
-            promoTags: ["limited-time", "seasonal"],
-          })),
-        }
+  const restaurantId = "550e8400-e29b-41d4-a716-446655440000"
 
-        setMenuData((prevData) => ({
-          ...prevData,
-          categories: [...prevData.categories, seasonalCategory],
-        }))
+  useEffect(() => {
+    loadMenuData()
+  }, [])
 
-        toast({
-          title: "🌱 Seasonal Items Added!",
-          description: `${appliedData.length} seasonal items have been added to your menu`,
-        })
-        break
+  const loadMenuData = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/menu/dashboard?restaurantId=${restaurantId}`)
+      const menuItems = await response.json()
 
-      case "item-descriptions":
-        // Update existing items with enhanced descriptions
-        if (typeof appliedData === "object" && appliedData.items) {
-          setMenuData((prevData) => ({
-            ...prevData,
-            categories: prevData.categories.map((category) => ({
-              ...category,
-              items: category.items.map((item) => {
-                const enhancedItem = appliedData.items.find((enhanced: any) => enhanced.id === item.id)
-                return enhancedItem ? { ...item, description: enhancedItem.description } : item
-              }),
-            })),
-          }))
+      // Group items by category (mock categories for demo)
+      const mockCategories: MenuCategory[] = [
+        {
+          id: "cat-1",
+          name: "Appetizers",
+          description: "Start your meal with our delicious appetizers",
+          display_order: 1,
+          items: menuItems.filter((item: MenuItem) => item.category_id === "cat-1"),
+        },
+        {
+          id: "cat-2",
+          name: "Main Course",
+          description: "Our signature main dishes",
+          display_order: 2,
+          items: menuItems.filter((item: MenuItem) => item.category_id === "cat-2"),
+        },
+        {
+          id: "cat-3",
+          name: "Desserts",
+          description: "Sweet endings to your meal",
+          display_order: 3,
+          items: menuItems.filter((item: MenuItem) => item.category_id === "cat-3") || [],
+        },
+      ]
 
-          toast({
-            title: "✨ Descriptions Enhanced!",
-            description: "Menu item descriptions have been improved with AI",
-          })
-        }
-        break
-
-      default:
-        toast({
-          title: "✅ Content Applied!",
-          description: "Content has been applied to your menu",
-        })
+      setCategories(mockCategories)
+      generateAnalytics(mockCategories)
+    } catch (error) {
+      console.error("Error loading menu:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load menu data",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleMenuExtracted = (extractedMenuData: any) => {
-    const newCategories = extractedMenuData.categories.map((category: any) => ({
-      ...category,
-      id: `extracted_${Date.now()}_${category.id}`,
-      items: category.items.map((item: any) => ({
-        ...item,
-        id: `extracted_${Date.now()}_${item.id}`,
-        inStock: true,
-      })),
-    }))
+  const generateAnalytics = (categoriesData: MenuCategory[]) => {
+    const allItems = categoriesData.flatMap((cat) => cat.items)
+    const totalItems = allItems.length
+    const totalCategories = categoriesData.length
+    const averagePrice = totalItems > 0 ? allItems.reduce((sum, item) => sum + item.price, 0) / totalItems : 0
 
-    setMenuData((prevData) => ({
-      ...prevData,
-      categories: [...prevData.categories, ...newCategories],
-    }))
+    const popularItems = allItems.sort((a, b) => (b.popularity_score || 0) - (a.popularity_score || 0)).slice(0, 5)
 
-    toast({
-      title: "✅ Menu Imported Successfully!",
-      description: `Added ${newCategories.length} categories and ${newCategories.reduce((total: number, cat: any) => total + cat.items.length, 0)} items to your menu.`,
+    const revenueByCategory = categoriesData.reduce(
+      (acc, category) => {
+        acc[category.name] = category.items.reduce((sum, item) => sum + item.price * (item.popularity_score || 1), 0)
+        return acc
+      },
+      {} as { [key: string]: number },
+    )
+
+    const profitMargins = categoriesData.reduce(
+      (acc, category) => {
+        const avgMargin =
+          category.items.reduce((sum, item) => sum + (item.profit_margin || 0.3), 0) / (category.items.length || 1)
+        acc[category.name] = avgMargin * 100
+        return acc
+      },
+      {} as { [key: string]: number },
+    )
+
+    setAnalytics({
+      totalItems,
+      totalCategories,
+      averagePrice: Number(averagePrice.toFixed(2)),
+      popularItems,
+      revenueByCategory,
+      profitMargins,
     })
   }
 
-  const handleContentGenerated = (content: any) => {
-    console.log("🎉 New content generated:", content)
-    setRefreshHistory((prev) => prev + 1)
-    setGeneratedContent(content)
-    setShowGeneratedContent(true)
+  useEffect(() => {
+    if (categories.length > 0) {
+      setHasMenuData(true)
+      setShowAIFeatures(true)
+    }
+  }, [categories])
 
-    toast({
-      title: "✅ Content Generated!",
-      description: `${content.title} has been created and is ready for review`,
-    })
-  }
-
+  // Handler functions
   const handleContinueOnboarding = () => {
-    router.push("/profile/reviews?onboarding=true&new=true")
+    router.push("/dashboard?onboarding=complete")
   }
 
-  const handleDeleteItem = (categoryId: string, itemId: string) => {
-    setMenuData((prevData) => ({
-      ...prevData,
-      categories: prevData.categories.map((category) =>
-        category.id === categoryId
-          ? {
-              ...category,
-              items: category.items.filter((item) => item.id !== itemId),
-            }
-          : category,
-      ),
-    }))
+  // const handleAddItem = () => {
+  //   if (!newItem.name || !newItem.description || !newItem.price || !newItem.category) {
+  //     toast({
+  //       title: "Missing Information",
+  //       description: "Please fill in all required fields",
+  //       variant: "destructive",
+  //     })
+  //     return
+  //   }
+
+  //   const item: MenuItem = {
+  //     id: `item-${Date.now()}`,
+  //     name: newItem.name!,
+  //     description: newItem.description!,
+  //     price: newItem.price!,
+  //     category: newItem.category!,
+  //     availability: newItem.availability || "available",
+  //     isVegetarian: newItem.isVegetarian || false,
+  //     isVegan: newItem.isVegan || false,
+  //     isGlutenFree: newItem.isGlutenFree || false,
+  //     isSpicy: newItem.isSpicy || false,
+  //     isPopular: newItem.isPopular || false,
+  //     isNew: newItem.isNew || false,
+  //     allergens: newItem.allergens || [],
+  //     tags: newItem.tags || [],
+  //   }
+
+  //   setMenuCategories((prev) =>
+  //     prev.map((cat) => (cat.id === newItem.category ? { ...cat, items: [...cat.items, item] } : cat)),
+  //   )
+
+  //   setNewItem({
+  //     name: "",
+  //     description: "",
+  //     price: 0,
+  //     category: "",
+  //     availability: "available",
+  //     isVegetarian: false,
+  //     isVegan: false,
+  //     isGlutenFree: false,
+  //     isSpicy: false,
+  //     isPopular: false,
+  //     isNew: false,
+  //     allergens: [],
+  //     tags: [],
+  //   })
+
+  //   setShowAddItemDialog(false)
+
+  //   toast({
+  //     title: "Item Added",
+  //     description: `${item.name} has been added to your menu`,
+  //   })
+  // }
+
+  const handleSaveItem = async (itemData: Partial<MenuItem>) => {
+    try {
+      // Mock API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      if (editingItem) {
+        // Update existing item
+        setCategories((prev) =>
+          prev.map((category) => ({
+            ...category,
+            items: category.items.map((item) => (item.id === editingItem.id ? { ...item, ...itemData } : item)),
+          })),
+        )
+      } else {
+        // Add new item
+        const newItem: MenuItem = {
+          id: `item-${Date.now()}`,
+          category_id: itemData.category_id || categories[0]?.id || "",
+          name: itemData.name || "",
+          description: itemData.description || "",
+          price: itemData.price || 0,
+          is_available: itemData.is_available ?? true,
+          dietary_info: itemData.dietary_info || [],
+          prep_time: itemData.prep_time,
+          calories: itemData.calories,
+          popularity_score: Math.random() * 100,
+          profit_margin: 0.3,
+        }
+
+        setCategories((prev) =>
+          prev.map((category) =>
+            category.id === newItem.category_id ? { ...category, items: [...category.items, newItem] } : category,
+          ),
+        )
+      }
+
+      setShowItemDialog(false)
+      setEditingItem(null)
+      toast({
+        title: "Success",
+        description: editingItem ? "Item updated successfully" : "Item added successfully",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save item",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleAddCategory = () => {
+    if (!newCategory.name) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a category name",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const category: MenuCategory = {
+      id: `category-${Date.now()}`,
+      name: newCategory.name,
+      description: newCategory.description,
+      display_order: categories.length + 1,
+      items: [],
+    }
+
+    setCategories((prev) => [...prev, category])
+
+    setNewCategory({
+      name: "",
+      description: "",
+      displayOrder: 0,
+      isActive: true,
+    })
+
+    setShowAddCategoryDialog(false)
 
     toast({
-      title: "🗑️ Item Deleted",
-      description: "Menu item has been removed",
+      title: "Category Added",
+      description: `${category.name} category has been created`,
     })
+  }
+
+  // const handleDeleteItem = (itemId: string, categoryId: string) => {
+  //   setMenuCategories((prev) =>
+  //     prev.map((cat) =>
+  //       cat.id === categoryId ? { ...cat, items: cat.items.filter((item) => item.id !== itemId) } : cat,
+  //     ),
+  //   )
+
+  //   toast({
+  //     title: "Item Deleted",
+  //     description: "Menu item has been removed",
+  //   })
+  // }
+
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      setCategories((prev) =>
+        prev.map((category) => ({
+          ...category,
+          items: category.items.filter((item) => item.id !== itemId),
+        })),
+      )
+
+      toast({
+        title: "Success",
+        description: "Item deleted successfully",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete item",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleDeleteCategory = (categoryId: string) => {
-    setMenuData((prevData) => ({
-      ...prevData,
-      categories: prevData.categories.filter((category) => category.id !== categoryId),
-    }))
+    setCategories((prev) => prev.filter((cat) => cat.id !== categoryId))
 
     toast({
-      title: "🗑️ Category Deleted",
+      title: "Category Deleted",
       description: "Category and all its items have been removed",
     })
   }
 
-  const handleToggleAvailability = (categoryId: string, itemId: string) => {
-    setMenuData((prevData) => ({
-      ...prevData,
-      categories: prevData.categories.map((category) =>
-        category.id === categoryId
-          ? {
-              ...category,
-              items: category.items.map((item) =>
-                item.id === itemId ? { ...item, available: !item.available } : item,
-              ),
-            }
-          : category,
-      ),
-    }))
+  const handleGenerateAIMenu = async () => {
+    setIsGeneratingMenu(true)
 
-    toast({
-      title: "✅ Availability Updated",
-      description: "Item availability has been changed",
-    })
-  }
-
-  const handleToggleStock = (categoryId: string, itemId: string) => {
-    setMenuData((prevData) => ({
-      ...prevData,
-      categories: prevData.categories.map((category) =>
-        category.id === categoryId
-          ? {
-              ...category,
-              items: category.items.map((item) => (item.id === itemId ? { ...item, inStock: !item.inStock } : item)),
-            }
-          : category,
-      ),
-    }))
-
-    toast({
-      title: "📦 Stock Status Updated",
-      description: "Item stock status has been changed",
-    })
-  }
-
-  const handleSaveCategory = () => {
-    if (editingCategory) {
-      // Edit existing category
-      setMenuData((prevData) => ({
-        ...prevData,
-        categories: prevData.categories.map((category) =>
-          category.id === editingCategory.id
-            ? { ...category, name: newCategory.name, description: newCategory.description }
-            : category,
-        ),
-      }))
-      toast({
-        title: "✅ Category Updated",
-        description: "Category has been updated successfully",
-      })
-    } else {
-      // Add new category
-      const category = {
-        id: `category_${Date.now()}`,
-        name: newCategory.name,
-        description: newCategory.description,
-        items: [],
-      }
-      setMenuData((prevData) => ({
-        ...prevData,
-        categories: [...prevData.categories, category],
-      }))
-      toast({
-        title: "✅ Category Added",
-        description: "New category has been created",
-      })
-    }
-
-    setShowEditCategory(false)
-    setEditingCategory(null)
-    setNewCategory({ name: "", description: "" })
-  }
-
-  const handleSaveItem = () => {
-    const item = {
-      id: editingItem ? editingItem.id : `item_${Date.now()}`,
-      name: newItem.name,
-      description: newItem.description,
-      price: Number.parseFloat(newItem.price),
-      available: newItem.available,
-      inStock: newItem.inStock,
-      tasteTags: newItem.tasteTags,
-      promoTags: newItem.promoTags,
-      image: "/placeholder.svg?height=80&width=80",
-    }
-
-    if (editingItem) {
-      // Edit existing item
-      setMenuData((prevData) => ({
-        ...prevData,
-        categories: prevData.categories.map((category) => ({
-          ...category,
-          items: category.items.map((existingItem) => (existingItem.id === editingItem.id ? item : existingItem)),
-        })),
-      }))
-      toast({
-        title: "✅ Item Updated",
-        description: "Menu item has been updated successfully",
-      })
-    } else {
-      // Add new item to first category (or create one if none exists)
-      if (menuData.categories.length === 0) {
-        const defaultCategory = {
-          id: `category_${Date.now()}`,
-          name: "Main Menu",
-          description: "Our delicious offerings",
-          items: [item],
-        }
-        setMenuData({ categories: [defaultCategory] })
-      } else {
-        setMenuData((prevData) => ({
-          ...prevData,
-          categories: prevData.categories.map((category, index) =>
-            index === 0 ? { ...category, items: [...category.items, item] } : category,
-          ),
-        }))
-      }
-      toast({
-        title: "✅ Item Added",
-        description: "New menu item has been created",
-      })
-    }
-
-    setShowEditItem(false)
-    setEditingItem(null)
-    setNewItem({
-      name: "",
-      description: "",
-      price: "",
-      available: true,
-      inStock: true,
-      tasteTags: [],
-      promoTags: [],
-    })
-  }
-
-  const handleGenerateInsights = async () => {
-    setIsGeneratingInsights(true)
-    try {
-      // Mock insights generation
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      const mockInsights = {
-        insights: [
-          {
-            id: "1",
-            type: "pricing",
-            title: "Underpriced Items",
-            description: "Samosa Chaat is priced 15% below market rate",
-            impact: "high",
-            items: ["Samosa Chaat"],
-            recommendation: "Increase price from $8.99 to $10.99",
-            potentialRevenue: 250,
-            cta: {
-              type: "price-change",
-              label: "Apply Price Change",
-              data: { itemId: "1", newPrice: 10.99 },
-            },
-          },
-          {
-            id: "2",
-            type: "pricing",
-            title: "Overpriced Items",
-            description: "Chicken Wings are priced 20% above market rate",
-            impact: "medium",
-            items: ["Chicken Wings"],
-            recommendation: "Reduce price from $12.99 to $10.99",
-            potentialRevenue: -50,
-            cta: {
-              type: "price-change",
-              label: "Apply Price Change",
-              data: { itemId: "2", newPrice: 10.99 },
-            },
-          },
-          {
-            id: "3",
-            type: "menu-balance",
-            title: "Category Imbalance",
-            description: "Desserts category is missing from your menu",
-            impact: "medium",
-            recommendation: "Add a Desserts category with 3-4 items",
-            cta: {
-              type: "add-category",
-              label: "Add Desserts Category",
-              data: { categoryName: "Desserts", categoryDescription: "Sweet endings to your meal" },
-            },
-          },
-          {
-            id: "4",
-            type: "menu-balance",
-            title: "Low Performing Item",
-            description: "Chicken Wings has low sales and should be considered for removal",
-            impact: "low",
-            recommendation: "Remove Chicken Wings or improve recipe",
-            cta: {
-              type: "remove-item",
-              label: "Remove Item",
-              data: { itemId: "2", categoryId: "1" },
-            },
-          },
-          {
-            id: "5",
-            type: "opportunities",
-            title: "Combo Opportunity",
-            description: "High-performing items can be bundled for better value",
-            impact: "high",
-            recommendation: "Create combo with Butter Chicken + Naan + Rice",
-            potentialRevenue: 180,
-            cta: {
-              type: "add-combos",
-              label: "Create Combos",
-              data: { items: ["Butter Chicken", "Naan", "Rice"] },
-            },
-          },
-          {
-            id: "6",
-            type: "opportunities",
-            title: "Seasonal Menu",
-            description: "Winter specials can boost sales by 25%",
-            impact: "high",
-            recommendation: "Add winter comfort foods and warm beverages",
-            potentialRevenue: 300,
-            cta: {
-              type: "add-seasonal-menu",
-              label: "Create Seasonal Menu",
-              data: { season: "winter" },
-            },
-          },
-          {
-            id: "7",
-            type: "opportunities",
-            title: "Missing Item Tags",
-            description: "Items lack descriptive tags for better discoverability",
-            impact: "medium",
-            recommendation: "Add taste and dietary tags to all items",
-            cta: {
-              type: "add-item-tags",
-              label: "Add Tags",
-              data: { items: ["all"] },
-            },
-          },
-          {
-            id: "8",
-            type: "opportunities",
-            title: "Recipe Exploration",
-            description: "Explore trending Indian fusion recipes",
-            impact: "medium",
-            recommendation: "Research popular fusion dishes in your area",
-            cta: {
-              type: "explore-ideas",
-              label: "Explore Ideas",
-              data: { query: "Indian fusion recipes trending 2024" },
-            },
-          },
-        ],
-        performance: {
-          menuScore: 7.8,
-          scoreBreakdown: {
-            pricing: 6.5,
-            balance: 8.2,
-            variety: 7.9,
-            profitability: 8.1,
-            trends: 7.5,
-          },
-          topPerforming: [
-            {
-              id: "7",
-              name: "Butter Chicken",
-              sales: 89,
-              revenue: 1512.11,
-              rating: 4.8,
-              trend: "increasing",
-              cta: {
-                type: "promote",
-                label: "Promote More",
-                data: { itemId: "7" },
-              },
-            },
-            {
-              id: "1",
-              name: "Samosa Chaat",
-              sales: 76,
-              revenue: 683.24,
-              rating: 4.6,
-              trend: "stable",
-              cta: {
-                type: "create-offer",
-                label: "Create Offer",
-                data: { itemId: "1" },
-              },
-            },
-          ],
-          underPerforming: [
-            {
-              id: "2",
-              name: "Chicken Wings",
-              sales: 23,
-              revenue: 298.77,
-              rating: 4.1,
-              trend: "declining",
-              issues: ["Out of stock frequently", "Price point too high"],
-              cta: {
-                type: "remove-item",
-                label: "Remove Item",
-                data: { itemId: "2", categoryId: "1" },
-              },
-            },
-          ],
-          recommendations: [
-            {
-              id: "r1",
-              title: "Reorder Categories",
-              description: "Move Main Course to top for better visibility",
-              cta: {
-                type: "reorder-category",
-                label: "Reorder",
-                data: { categoryId: "2", newPosition: 0 },
-              },
-            },
-            {
-              id: "r2",
-              title: "Improve Descriptions",
-              description: "Enhance item descriptions for better appeal",
-              cta: {
-                type: "add-item-description",
-                label: "Enhance Descriptions",
-                data: { items: ["all"] },
-              },
-            },
-            {
-              id: "r3",
-              title: "Menu Design",
-              description: "Update fonts and colors for modern look",
-              cta: {
-                type: "change-design",
-                label: "Update Design",
-                data: { type: "modern" },
-              },
-            },
-          ],
-        },
-      }
-
-      setInsightsData(mockInsights)
-      toast({
-        title: "📊 Insights Generated!",
-        description: "AI has analyzed your menu and generated insights",
-      })
-    } catch (error) {
-      toast({
-        title: "❌ Generation Failed",
-        description: "Please try again",
-        variant: "destructive",
-      })
-    } finally {
-      setIsGeneratingInsights(false)
-    }
-  }
-
-  const handleInsightCTA = (cta: any) => {
-    switch (cta.type) {
-      case "price-change":
-        // Implement price change in menu
-        setMenuData((prevData) => ({
-          ...prevData,
-          categories: prevData.categories.map((category) => ({
-            ...category,
-            items: category.items.map((item) =>
-              item.id === cta.data.itemId ? { ...item, price: cta.data.newPrice } : item,
-            ),
-          })),
-        }))
-        toast({
-          title: "💰 Price Updated",
-          description: `Item price has been changed to $${cta.data.newPrice}`,
-        })
-        break
-
-      case "add-category":
-        // Add new category
-        const newCat = {
-          id: `category_${Date.now()}`,
-          name: cta.data.categoryName,
-          description: cta.data.categoryDescription,
-          items: [],
-        }
-        setMenuData((prevData) => ({
-          ...prevData,
-          categories: [...prevData.categories, newCat],
-        }))
-        toast({
-          title: "📁 Category Added",
-          description: `${cta.data.categoryName} category has been created`,
-        })
-        break
-
-      case "remove-item":
-        // Remove item
-        handleDeleteItem(cta.data.categoryId, cta.data.itemId)
-        break
-
-      case "add-combos":
-        // Navigate to AI tools tab
-        setActiveTab("ai-tools")
-        toast({
-          title: "🍽️ Combo Creation",
-          description: "Navigate to AI Tools to create combos",
-        })
-        break
-
-      case "add-seasonal-menu":
-        // Navigate to AI tools tab
-        setActiveTab("ai-tools")
-        toast({
-          title: "🌱 Seasonal Menu",
-          description: "Navigate to AI Tools to create seasonal menu",
-        })
-        break
-
-      case "add-item-tags":
-        // Navigate to AI tools tab
-        setActiveTab("ai-tools")
-        toast({
-          title: "🏷️ Item Tags",
-          description: "Navigate to AI Tools to add item tags",
-        })
-        break
-
-      case "explore-ideas":
-        // Open search results
-        window.open(`https://www.google.com/search?q=${encodeURIComponent(cta.data.query)}`, "_blank")
-        toast({
-          title: "🔍 Exploring Ideas",
-          description: "Opening search results in new tab",
-        })
-        break
-
-      case "add-item-description":
-        // Navigate to AI tools tab
-        setActiveTab("ai-tools")
-        toast({
-          title: "📝 Item Descriptions",
-          description: "Navigate to AI Tools to enhance descriptions",
-        })
-        break
-
-      case "promote":
-        // Navigate to marketing manager (placeholder)
-        toast({
-          title: "📢 Promotion",
-          description: "Marketing manager integration coming soon",
-        })
-        break
-
-      case "create-offer":
-        // Navigate to marketing manager (placeholder)
-        toast({
-          title: "🎁 Create Offer",
-          description: "Marketing manager integration coming soon",
-        })
-        break
-
-      case "reorder-category":
-        // Implement category reordering
-        setMenuData((prevData) => {
-          const categories = [...prevData.categories]
-          const categoryIndex = categories.findIndex((cat) => cat.id === cta.data.categoryId)
-          if (categoryIndex !== -1) {
-            const [category] = categories.splice(categoryIndex, 1)
-            categories.splice(cta.data.newPosition, 0, category)
-          }
-          return { ...prevData, categories }
-        })
-        toast({
-          title: "🔄 Category Reordered",
-          description: "Category order has been updated",
-        })
-        break
-
-      case "change-design":
-        // Navigate to menu tab for design changes
-        setActiveTab("menu")
-        toast({
-          title: "🎨 Design Update",
-          description: "Design customization coming soon",
-        })
-        break
-
-      default:
-        toast({
-          title: "🚀 Action Triggered",
-          description: cta.label,
-        })
-    }
-  }
-
-  const handlePlatformImport = (platformId: string) => {
-    setShowImportModal(false)
-    toast({
-      title: "🤖 AI Import Started",
-      description: `Importing menu from ${connectedPlatforms.find((p) => p.id === platformId)?.name}...`,
-    })
-    // Simulate import process
     setTimeout(() => {
+      const aiGeneratedItems: MenuItem[] = [
+        {
+          id: "ai-item-1",
+          name: "Mediterranean Quinoa Bowl",
+          description: "Nutritious quinoa with roasted vegetables, feta cheese, and tahini dressing",
+          price: 16.99,
+          category_id: "mains",
+          is_available: true,
+          prep_time: 12,
+          calories: 420,
+          popularity_score: 0,
+          profit_margin: 0,
+          dietary_info: ["vegetarian", "gluten-free"],
+          image_url: "",
+        },
+        {
+          id: "ai-item-2",
+          name: "Truffle Mushroom Risotto",
+          description: "Creamy arborio rice with wild mushrooms and truffle oil",
+          price: 22.99,
+          category_id: "mains",
+          is_available: true,
+          prep_time: 25,
+          calories: 520,
+          popularity_score: 0,
+          profit_margin: 0,
+          dietary_info: ["vegetarian"],
+          image_url: "",
+        },
+      ]
+
+      setCategories((prev) =>
+        prev.map((cat) => (cat.id === "mains" ? { ...cat, items: [...cat.items, ...aiGeneratedItems] } : cat)),
+      )
+
+      setIsGeneratingMenu(false)
+
       toast({
-        title: "✅ Import Complete",
-        description: "Menu has been successfully imported and processed",
+        title: "AI Menu Generated",
+        description: "Added 2 new AI-suggested items to your menu",
       })
     }, 3000)
   }
 
-  const handleSaveMenu = () => {
+  const handleRunAnalytics = async () => {
+    setIsAnalyzing(true)
+
+    setTimeout(() => {
+      setIsAnalyzing(false)
+      toast({
+        title: "Analytics Updated",
+        description: "Menu performance analysis has been refreshed",
+      })
+    }, 2000)
+  }
+
+  const handleExportMenu = () => {
     toast({
-      title: "💾 Menu Saved",
-      description: "Your menu has been saved successfully",
+      title: "Export Started",
+      description: "Your menu is being prepared for download",
     })
+
+    setTimeout(() => {
+      toast({
+        title: "Export Complete",
+        description: "Menu has been downloaded successfully",
+      })
+    }, 2000)
   }
 
-  const scrollToCategory = (categoryId: string) => {
-    const element = document.getElementById(`category-${categoryId}`)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" })
-    }
-  }
-
-  const filteredCategories = menuData.categories
+  const filteredCategories = categories
     .map((category) => ({
       ...category,
       items: category.items.filter((item) => {
         const matchesSearch =
-          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesFilter = filterAvailable === null || item.available === filterAvailable
-        return matchesSearch && matchesFilter
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchTerm.toLowerCase())
+        const matchesCategory = selectedCategory === "all" || category.id === selectedCategory
+        return matchesSearch && matchesCategory
       }),
     }))
-    .filter((category) => category.items.length > 0 || searchQuery === "")
+    .filter((category) => selectedCategory === "all" || category.id === selectedCategory)
 
-  // Empty state component for new users
+  // const filteredCategories = menuCategories.filter((category) => {
+  //   if (selectedCategory === "all") return true
+  //   return category.id === selectedCategory
+  // })
+
+  // const filteredItems = filteredCategories.flatMap((category) =>
+  //   category.items.filter(
+  //     (item) =>
+  //       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //       item.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  //   ),
+  // )
+
+  const aiSuggestions = [
+    {
+      type: "pricing",
+      title: "Optimize Pricing",
+      content: "Increase Butter Chicken price by ₹50 to improve profit margin by 15%",
+      action: "Apply Suggestion",
+    },
+    {
+      type: "menu",
+      title: "Add Seasonal Item",
+      content: "Add 'Mango Kulfi' to desserts - trending 40% higher this season",
+      action: "Generate Item",
+    },
+    {
+      type: "performance",
+      title: "Remove Low Performer",
+      content: "Consider removing 'Paneer Kofta' - only 2% of orders in last month",
+      action: "Review Item",
+    },
+  ]
+
+  // Empty state for new users
   const EmptyMenuState = () => (
-    <div className="text-center py-12 px-4">
+    <div className="text-center py-8 px-4">
       <div className="max-w-md mx-auto">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <ChefHat className="w-8 h-8 text-gray-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Build Your Menu</h3>
         <p className="text-gray-600 mb-6 text-sm">
-          Start building your restaurant menu by importing from platforms, uploading files, or creating manually.
+          Start creating your restaurant menu by adding categories and items, or let AI help you generate one.
         </p>
 
         <div className="space-y-3">
-          <Button onClick={() => setShowImportModal(true)} className="w-full bg-black hover:bg-gray-800 text-white">
-            <Download className="w-4 h-4 mr-2" />
-            Import Menu
-          </Button>
-
-          <Button onClick={() => setActiveTab("ai-tools")} variant="outline" className="w-full">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Generate with AI
-          </Button>
-
           <Button
-            variant="outline"
-            className="w-full bg-transparent"
-            onClick={() => {
-              setNewCategory({ name: "Main Menu", description: "Our delicious offerings" })
-              setEditingCategory(null)
-              setShowEditCategory(true)
-            }}
+            onClick={() => setShowAddCategoryDialog(true)}
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Create Manually
+            Add First Category
           </Button>
-        </div>
-      </div>
-    </div>
-  )
 
-  // Import Modal Component
-  const ImportModal = () => (
-    <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Import Menu</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <h4 className="font-medium mb-3">Connected Platforms</h4>
-            <div className="space-y-2">
-              {connectedPlatforms.map((platform) => {
-                const Icon = platform.icon
-                return (
-                  <Button
-                    key={platform.id}
-                    variant="outline"
-                    className="w-full justify-start bg-transparent hover:bg-gray-50"
-                    onClick={() => handlePlatformImport(platform.id)}
-                  >
-                    <Icon className="w-4 h-4 mr-3" />
-                    <span className="flex-1 text-left">{platform.name}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      AI Import
-                    </Badge>
-                  </Button>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <h4 className="font-medium mb-3">Manual Import</h4>
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start bg-transparent hover:bg-gray-50"
-                onClick={() => {
-                  setShowImportModal(false)
-                  setShowExtractModal(true)
-                }}
-              >
-                <Upload className="w-4 h-4 mr-3" />
-                <span className="flex-1 text-left">Upload File</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start bg-transparent hover:bg-gray-50"
-                onClick={() => {
-                  setShowImportModal(false)
-                  // Open manual text input
-                }}
-              >
-                <Copy className="w-4 h-4 mr-3" />
-                <span className="flex-1 text-left">Copy & Paste</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-
-  // Menu Summary Navigation
-  const MenuSummaryNav = () => (
-    <div className="bg-white border rounded-lg p-4 mb-6">
-      <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-        <Grid3X3 className="w-4 h-4 mr-2" />
-        Quick Navigation
-      </h4>
-      <div className="flex flex-wrap gap-2">
-        {menuData.categories.map((category) => (
           <Button
-            key={category.id}
+            onClick={handleGenerateAIMenu}
             variant="outline"
-            size="sm"
-            onClick={() => scrollToCategory(category.id)}
-            className="text-xs"
+            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 bg-transparent"
+            disabled={isGeneratingMenu}
           >
-            {category.name}
-            <Badge variant="secondary" className="ml-2 text-xs">
-              {category.items.length}
-            </Badge>
+            {isGeneratingMenu ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4 mr-2" />
+                Generate with AI
+              </>
+            )}
           </Button>
-        ))}
+        </div>
+
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <Lightbulb className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+            <div className="text-left">
+              <h4 className="font-medium text-gray-900 text-sm">Pro Tip</h4>
+              <p className="text-gray-600 text-xs mt-1">
+                Start with main categories like Appetizers, Main Courses, and Desserts. You can always reorganize later.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
 
-  // Edit Category Modal
-  const EditCategoryModal = () => (
-    <Dialog open={showEditCategory} onOpenChange={setShowEditCategory}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{editingCategory ? "Edit Category" : "Add Category"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="categoryName">Category Name</Label>
-            <Input
-              id="categoryName"
-              value={newCategory.name}
-              onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g., Appetizers"
-            />
-          </div>
-          <div>
-            <Label htmlFor="categoryDescription">Description</Label>
-            <Textarea
-              id="categoryDescription"
-              value={newCategory.description}
-              onChange={(e) => setNewCategory((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Brief description of this category"
-              rows={3}
-            />
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowEditCategory(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveCategory} disabled={!newCategory.name.trim()}>
-              {editingCategory ? "Update" : "Add"} Category
-            </Button>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-3 py-4 pb-20">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
-  )
-
-  // Edit Item Modal
-  const EditItemModal = () => (
-    <Dialog open={showEditItem} onOpenChange={setShowEditItem}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{editingItem ? "Edit Item" : "Add Item"}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="itemName">Item Name</Label>
-            <Input
-              id="itemName"
-              value={newItem.name}
-              onChange={(e) => setNewItem((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g., Butter Chicken"
-            />
-          </div>
-          <div>
-            <Label htmlFor="itemDescription">Description</Label>
-            <Textarea
-              id="itemDescription"
-              value={newItem.description}
-              onChange={(e) => setNewItem((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe the dish"
-              rows={3}
-            />
-          </div>
-          <div>
-            <Label htmlFor="itemPrice">Price ($)</Label>
-            <Input
-              id="itemPrice"
-              type="number"
-              step="0.01"
-              value={newItem.price}
-              onChange={(e) => setNewItem((prev) => ({ ...prev, price: e.target.value }))}
-              placeholder="0.00"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="itemAvailable">Available</Label>
-            <Switch
-              id="itemAvailable"
-              checked={newItem.available}
-              onCheckedChange={(checked) => setNewItem((prev) => ({ ...prev, available: checked }))}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="itemInStock">In Stock</Label>
-            <Switch
-              id="itemInStock"
-              checked={newItem.inStock}
-              onCheckedChange={(checked) => setNewItem((prev) => ({ ...prev, inStock: checked }))}
-            />
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowEditItem(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveItem} disabled={!newItem.name.trim() || !newItem.price}>
-              {editingItem ? "Update" : "Add"} Item
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+      <div className="max-w-6xl mx-auto px-3 py-4 pb-20">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Menu Manager</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {isNewUser ? "Build your restaurant menu" : "Manage and optimize your menu"}
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              {menuData.categories.length > 0 && (
-                <>
-                  <Button onClick={() => setShowPreview(true)} variant="outline" size="sm" className="hidden sm:flex">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Preview
-                  </Button>
-                  <Button
-                    onClick={handleSaveMenu}
-                    variant="outline"
-                    size="sm"
-                    className="hidden sm:flex bg-transparent"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save
-                  </Button>
-                  {/* Mobile Icons */}
-                  <Button onClick={() => setShowPreview(true)} variant="outline" size="sm" className="sm:hidden">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button onClick={handleSaveMenu} variant="outline" size="sm" className="sm:hidden bg-transparent">
-                    <Save className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-              <Button
-                onClick={() => setShowImportModal(true)}
-                className="bg-black hover:bg-gray-800 text-white"
-                size="sm"
-              >
-                <Download className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Import</span>
-              </Button>
-            </div>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Menu Builder</h1>
+            <p className="text-sm text-gray-600">Create and manage your restaurant menu</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" onClick={() => router.push("/menu-intelligence")}>
+              <BarChart3 className="w-4 h-4 mr-1" />
+              View Intelligence
+            </Button>
+            <Button variant="outline" size="sm">
+              <Upload className="w-4 h-4 mr-1" />
+              Import
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingItem(null)
+                setShowItemDialog(true)
+              }}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add Item
+            </Button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="menu" className="flex items-center space-x-2">
-              <Utensils className="w-4 h-4" />
-              <span>Menu</span>
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>Insights</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai-tools" className="flex items-center space-x-2">
-              <Sparkles className="w-4 h-4" />
-              <span>AI Tools</span>
-            </TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="menu">Menu Items</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="design">Design</TabsTrigger>
+            <TabsTrigger value="publish">Publish</TabsTrigger>
           </TabsList>
 
-          {/* Menu Tab */}
-          <TabsContent value="menu">
-            {menuData.categories.length === 0 ? (
-              <EmptyMenuState />
-            ) : (
-              <div className="space-y-6">
-                {/* Menu Summary Navigation */}
-                <MenuSummaryNav />
+          {/* Menu Items Tab */}
+          <TabsContent value="menu" className="space-y-6">
+            {/* Quick Stats */}
+            {analytics && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Total Items</p>
+                        <p className="text-lg font-semibold">{analytics.totalItems}</p>
+                      </div>
+                      <Utensils className="w-5 h-5 text-blue-600" />
+                    </div>
+                  </CardContent>
+                </Card>
 
-                {/* Search & Filters */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      type="text"
-                      placeholder="Search menu items..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Categories</p>
+                        <p className="text-lg font-semibold">{analytics.totalCategories}</p>
+                      </div>
+                      <Grid3X3 className="w-5 h-5 text-green-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Avg Price</p>
+                        <p className="text-lg font-semibold">₹{analytics.averagePrice}</p>
+                      </div>
+                      <DollarSign className="w-5 h-5 text-yellow-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">Popular Items</p>
+                        <p className="text-lg font-semibold">{analytics.popularItems.length}</p>
+                      </div>
+                      <Star className="w-5 h-5 text-purple-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* AI Suggestions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center">
+                  <Zap className="w-4 h-4 mr-2 text-yellow-600" />
+                  AI Menu Suggestions
+                </CardTitle>
+                <CardDescription>Smart recommendations to optimize your menu</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {aiSuggestions.map((suggestion, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-sm mb-1">{suggestion.title}</h4>
+                      <p className="text-sm text-gray-700">{suggestion.content}</p>
+                    </div>
+                    <Button size="sm" variant="outline" className="ml-3 bg-transparent">
+                      {suggestion.action}
+                    </Button>
                   </div>
-                  <div className="flex gap-2">
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Filters and Controls */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row gap-4 items-center">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        placeholder="Search menu items..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex items-center space-x-2">
                     <Button
-                      variant={filterAvailable === true ? "default" : "outline"}
-                      onClick={() => setFilterAvailable(filterAvailable === true ? null : true)}
+                      variant={viewMode === "grid" ? "default" : "outline"}
                       size="sm"
+                      onClick={() => setViewMode("grid")}
                     >
-                      Available
+                      <Grid3X3 className="w-4 h-4" />
                     </Button>
                     <Button
-                      variant={filterAvailable === false ? "default" : "outline"}
-                      onClick={() => setFilterAvailable(filterAvailable === false ? null : false)}
+                      variant={viewMode === "list" ? "default" : "outline"}
                       size="sm"
+                      onClick={() => setViewMode("list")}
                     >
-                      Unavailable
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setNewCategory({ name: "", description: "" })
-                        setEditingCategory(null)
-                        setShowEditCategory(true)
-                      }}
-                      size="sm"
-                      className="bg-black hover:bg-gray-800 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Category
+                      <List className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* Categories */}
-                <div className="space-y-6">
-                  {filteredCategories.map((category) => (
-                    <Card key={category.id} className="overflow-hidden" id={`category-${category.id}`}>
-                      <CardHeader className="pb-3">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <CardTitle className="text-lg">{category.name}</CardTitle>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setEditingCategory(category)
-                                  setNewCategory({ name: category.name, description: category.description })
-                                  setShowEditCategory(true)
-                                }}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Edit className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteCategory(category.id)}
-                                className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                            <CardDescription className="text-sm">{category.description}</CardDescription>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              {category.items.length} items
-                            </Badge>
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setNewItem({
-                                  name: "",
-                                  description: "",
-                                  price: "",
-                                  available: true,
-                                  inStock: true,
-                                  tasteTags: [],
-                                  promoTags: [],
-                                })
-                                setEditingItem(null)
-                                setShowEditItem(true)
-                              }}
-                              className="bg-black hover:bg-gray-800 text-white"
-                            >
-                              <Plus className="w-3 h-3 mr-1" />
-                              Add Item
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="pt-0">
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {category.items.map((item) => (
-                            <div key={item.id} className="bg-white border rounded-lg p-4 relative">
-                              {/* Item Actions */}
-                              <div className="absolute top-2 right-2 flex gap-1">
+            {/* Menu Categories and Items */}
+            <div className="space-y-6">
+              {filteredCategories.map((category) => (
+                <Card key={category.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-base">{category.name}</CardTitle>
+                        <CardDescription>{category.description}</CardDescription>
+                      </div>
+                      <Badge variant="outline">{category.items.length} items</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {viewMode === "grid" ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {category.items.map((item) => (
+                          <div key={item.id} className="border rounded-lg p-4 bg-white">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-sm mb-1">{item.name}</h4>
+                                <p className="text-xs text-gray-600 mb-2 line-clamp-2">{item.description}</p>
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <span className="font-semibold text-sm">₹{item.price}</span>
+                                  {item.prep_time && (
+                                    <Badge variant="outline" className="text-xs">
+                                      <Clock className="w-3 h-3 mr-1" />
+                                      {item.prep_time}min
+                                    </Badge>
+                                  )}
+                                </div>
+                                {item.dietary_info && item.dietary_info.length > 0 && (
+                                  <div className="flex items-center space-x-1 mb-2">
+                                    {item.dietary_info.includes("vegetarian") && (
+                                      <Leaf className="w-3 h-3 text-green-600" />
+                                    )}
+                                    {item.dietary_info.includes("spicy") && <Flame className="w-3 h-3 text-red-600" />}
+                                    {item.dietary_info.includes("cold") && (
+                                      <Snowflake className="w-3 h-3 text-blue-600" />
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-1">
                                 <Button
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => {
                                     setEditingItem(item)
-                                    setNewItem({
-                                      name: item.name,
-                                      description: item.description,
-                                      price: item.price.toString(),
-                                      available: item.available,
-                                      inStock: item.inStock,
-                                      tasteTags: item.tasteTags || [],
-                                      promoTags: item.promoTags || [],
-                                    })
-                                    setShowEditItem(true)
+                                    setShowItemDialog(true)
                                   }}
-                                  className="h-6 w-6 p-0"
                                 >
-                                  <Edit className="w-3 h-3" />
+                                  <Edit className="w-4 h-4" />
                                 </Button>
+                                <Button size="sm" variant="ghost" onClick={() => handleDeleteItem(item.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <Switch
+                                checked={item.is_available}
+                                onCheckedChange={(checked) => {
+                                  setCategories((prev) =>
+                                    prev.map((cat) => ({
+                                      ...cat,
+                                      items: cat.items.map((i) =>
+                                        i.id === item.id ? { ...i, is_available: checked } : i,
+                                      ),
+                                    })),
+                                  )
+                                }}
+                              />
+                              <span className="text-xs text-gray-500">
+                                {item.is_available ? "Available" : "Unavailable"}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {category.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center justify-between p-3 border rounded-lg bg-white"
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3">
+                                <div>
+                                  <h4 className="font-medium text-sm">{item.name}</h4>
+                                  <p className="text-xs text-gray-600">{item.description}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <span className="font-semibold text-sm">₹{item.price}</span>
+                              <Switch
+                                checked={item.is_available}
+                                onCheckedChange={(checked) => {
+                                  setCategories((prev) =>
+                                    prev.map((cat) => ({
+                                      ...cat,
+                                      items: cat.items.map((i) =>
+                                        i.id === item.id ? { ...i, is_available: checked } : i,
+                                      ),
+                                    })),
+                                  )
+                                }}
+                              />
+                              <div className="flex items-center space-x-1">
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => handleDeleteItem(category.id, item.id)}
-                                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                                  onClick={() => {
+                                    setEditingItem(item)
+                                    setShowItemDialog(true)
+                                  }}
                                 >
-                                  <Trash2 className="w-3 h-3" />
+                                  <Edit className="w-4 h-4" />
                                 </Button>
-                              </div>
-
-                              <div className="pr-12 mb-3">
-                                <h4 className="font-medium text-gray-900 text-sm mb-1">{item.name}</h4>
-                                <p className="text-xs text-gray-600 line-clamp-2">{item.description}</p>
-                              </div>
-
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="text-lg font-semibold text-gray-900">${item.price.toFixed(2)}</div>
-                                <div className="flex items-center space-x-2">
-                                  <button
-                                    onClick={() => handleToggleAvailability(category.id, item.id)}
-                                    className={`w-3 h-3 rounded-full ${item.available ? "bg-green-500" : "bg-gray-400"}`}
-                                    title={item.available ? "Available" : "Unavailable"}
-                                  />
-                                  <button
-                                    onClick={() => handleToggleStock(category.id, item.id)}
-                                    className="text-xs px-2 py-1 rounded border"
-                                    style={{
-                                      backgroundColor: item.inStock ? "#f0f9ff" : "#fef2f2",
-                                      borderColor: item.inStock ? "#0ea5e9" : "#ef4444",
-                                      color: item.inStock ? "#0ea5e9" : "#ef4444",
-                                    }}
-                                  >
-                                    {item.inStock ? "In Stock" : "Out of Stock"}
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* Tags */}
-                              <div className="flex flex-wrap gap-1">
-                                {item.tasteTags?.slice(0, 2).map((tag) => {
-                                  const config = tasteTagsConfig[tag as keyof typeof tasteTagsConfig]
-                                  if (!config) return null
-                                  const Icon = config.icon
-                                  return (
-                                    <Badge key={tag} variant="outline" className={`text-xs ${config.color}`}>
-                                      <Icon className="w-2.5 h-2.5 mr-1" />
-                                      {config.label}
-                                    </Badge>
-                                  )
-                                })}
-                                {item.promoTags?.slice(0, 1).map((tag) => {
-                                  const config = promoTagsConfig[tag as keyof typeof promoTagsConfig]
-                                  if (!config) return null
-                                  return (
-                                    <Badge key={tag} variant="outline" className={`text-xs ${config.color}`}>
-                                      {config.label}
-                                    </Badge>
-                                  )
-                                })}
+                                <Button size="sm" variant="ghost" onClick={() => handleDeleteItem(item.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Insights Tab */}
-          <TabsContent value="insights">
-            {menuData.categories.length === 0 ? (
-              <div className="text-center py-12">
-                <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Insights Yet</h3>
-                <p className="text-gray-600 text-sm mb-4">Add menu items to generate insights and analytics</p>
-                <Button onClick={() => setActiveTab("menu")} variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Menu Items
-                </Button>
-              </div>
-            ) : !insightsData ? (
-              <div className="text-center py-12">
-                <div className="max-w-md mx-auto">
-                  <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Generate Menu Insights</h3>
-                  <p className="text-gray-600 mb-6">
-                    Get AI-powered insights about your menu performance, pricing optimization, and growth opportunities.
-                  </p>
-                  <Button
-                    onClick={handleGenerateInsights}
-                    disabled={isGeneratingInsights}
-                    className="bg-black hover:bg-gray-800 text-white"
-                  >
-                    {isGeneratingInsights ? (
-                      <>
-                        <BarChart3 className="w-4 h-4 mr-2 animate-spin" />
-                        Generating Insights...
-                      </>
-                    ) : (
-                      <>
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Generate Insights
-                      </>
+                          </div>
+                        ))}
+                      </div>
                     )}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <Tabs value={insightsTab} onValueChange={setInsightsTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="insights">Insights</TabsTrigger>
-                    <TabsTrigger value="performance">Performance</TabsTrigger>
-                  </TabsList>
 
-                  <TabsContent value="insights">
-                    <div className="space-y-6">
-                      {/* Pricing Insights */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                          <DollarSign className="w-5 h-5 mr-2 text-green-600" />
-                          Pricing Insights
-                        </h3>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          {insightsData.insights
-                            .filter((insight: any) => insight.type === "pricing")
-                            .map((insight: any) => (
-                              <Card key={insight.id}>
-                                <CardHeader className="pb-3">
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <CardTitle className="text-base">{insight.title}</CardTitle>
-                                      <CardDescription className="text-sm">{insight.description}</CardDescription>
-                                    </div>
-                                    <Badge
-                                      variant={
-                                        insight.impact === "high"
-                                          ? "destructive"
-                                          : insight.impact === "medium"
-                                            ? "default"
-                                            : "secondary"
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {insight.impact}
-                                    </Badge>
-                                  </div>
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                  <p className="text-sm text-gray-700 mb-3">{insight.recommendation}</p>
-                                  {insight.potentialRevenue && (
-                                    <div className="mb-3">
-                                      <Badge
-                                        variant="outline"
-                                        className={`text-xs ${
-                                          insight.potentialRevenue > 0
-                                            ? "bg-green-50 text-green-700 border-green-200"
-                                            : "bg-red-50 text-red-700 border-red-200"
-                                        }`}
-                                      >
-                                        {insight.potentialRevenue > 0 ? "+" : ""}${insight.potentialRevenue}/month
-                                      </Badge>
-                                    </div>
-                                  )}
-                                  <Button
-                                    onClick={() => handleInsightCTA(insight.cta)}
-                                    size="sm"
-                                    className="w-full bg-black hover:bg-gray-800 text-white"
-                                  >
-                                    {insight.cta.label}
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            ))}
-                        </div>
+                    {category.items.length === 0 && (
+                      <div className="text-center py-8">
+                        <ChefHat className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">No items in this category yet</p>
+                        <Button
+                          onClick={() => {
+                            setEditingItem(null)
+                            setShowItemDialog(true)
+                          }}
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add First Item
+                        </Button>
                       </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
-                      {/* Menu Balance Insights */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                          <Target className="w-5 h-5 mr-2 text-blue-600" />
-                          Menu Balance
-                        </h3>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          {insightsData.insights
-                            .filter((insight: any) => insight.type === "menu-balance")
-                            .map((insight: any) => (
-                              <Card key={insight.id}>
-                                <CardHeader className="pb-3">
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <CardTitle className="text-base">{insight.title}</CardTitle>
-                                      <CardDescription className="text-sm">{insight.description}</CardDescription>
-                                    </div>
-                                    <Badge
-                                      variant={
-                                        insight.impact === "high"
-                                          ? "destructive"
-                                          : insight.impact === "medium"
-                                            ? "default"
-                                            : "secondary"
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {insight.impact}
-                                    </Badge>
-                                  </div>
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                  <p className="text-sm text-gray-700 mb-3">{insight.recommendation}</p>
-                                  <Button
-                                    onClick={() => handleInsightCTA(insight.cta)}
-                                    size="sm"
-                                    className="w-full bg-black hover:bg-gray-800 text-white"
-                                  >
-                                    {insight.cta.label}
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            ))}
-                        </div>
-                      </div>
-
-                      {/* Opportunities */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                          <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
-                          Opportunities
-                        </h3>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          {insightsData.insights
-                            .filter((insight: any) => insight.type === "opportunities")
-                            .map((insight: any) => (
-                              <Card key={insight.id}>
-                                <CardHeader className="pb-3">
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <CardTitle className="text-base">{insight.title}</CardTitle>
-                                      <CardDescription className="text-sm">{insight.description}</CardDescription>
-                                    </div>
-                                    <Badge
-                                      variant={
-                                        insight.impact === "high"
-                                          ? "destructive"
-                                          : insight.impact === "medium"
-                                            ? "default"
-                                            : "secondary"
-                                      }
-                                      className="text-xs"
-                                    >
-                                      {insight.impact}
-                                    </Badge>
-                                  </div>
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                  <p className="text-sm text-gray-700 mb-3">{insight.recommendation}</p>
-                                  {insight.potentialRevenue && (
-                                    <div className="mb-3">
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs bg-green-50 text-green-700 border-green-200"
-                                      >
-                                        +${insight.potentialRevenue}/month potential
-                                      </Badge>
-                                    </div>
-                                  )}
-                                  <Button
-                                    onClick={() => handleInsightCTA(insight.cta)}
-                                    size="sm"
-                                    className="w-full bg-black hover:bg-gray-800 text-white"
-                                  >
-                                    {insight.cta.type === "explore-ideas" && <ExternalLink className="w-3 h-3 mr-1" />}
-                                    {insight.cta.label}
-                                  </Button>
-                                </CardContent>
-                              </Card>
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="performance">
-                    <div className="space-y-6">
-                      {/* Menu Score */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <Star className="w-5 h-5 text-yellow-500" />
-                            <span>Menu Score</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center space-x-6 mb-6">
-                            <div className="text-4xl font-bold text-gray-900">{insightsData.performance.menuScore}</div>
-                            <div className="text-sm text-gray-600">/10</div>
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6">
+            {analytics && (
+              <>
+                {/* Revenue by Category */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Revenue by Category</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {Object.entries(analytics.revenueByCategory).map(([category, revenue]) => (
+                        <div key={category} className="flex items-center justify-between">
+                          <span className="text-sm">{category}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-32 bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-500 h-2 rounded-full"
+                                style={{
+                                  width: `${(revenue / Math.max(...Object.values(analytics.revenueByCategory))) * 100}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium w-20 text-right">₹{revenue.toLocaleString()}</span>
                           </div>
-
-                          <div className="space-y-3">
-                            <h4 className="font-medium text-gray-900">Score Breakdown</h4>
-                            {Object.entries(insightsData.performance.scoreBreakdown).map(([key, value]) => (
-                              <div key={key} className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600 capitalize">
-                                  {key.replace(/([A-Z])/g, " $1")}
-                                </span>
-                                <div className="flex items-center space-x-2">
-                                  <Progress value={(value as number) * 10} className="w-20 h-2" />
-                                  <span className="text-sm font-medium w-8">{value}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Top Performing Items */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                          <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                          Top Performing Items
-                        </h3>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          {insightsData.performance.topPerforming.map((item: any) => (
-                            <Card key={item.id}>
-                              <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <CardTitle className="text-base">{item.name}</CardTitle>
-                                    <div className="flex items-center space-x-4 mt-1">
-                                      <span className="text-sm text-gray-600">{item.sales} orders</span>
-                                      <span className="text-sm text-gray-600">${item.revenue}</span>
-                                      <div className="flex items-center">
-                                        <Star className="w-3 h-3 text-yellow-500 mr-1" />
-                                        <span className="text-sm">{item.rating}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <Badge
-                                    variant="outline"
-                                    className={`text-xs ${
-                                      item.trend === "increasing"
-                                        ? "bg-green-50 text-green-700 border-green-200"
-                                        : "bg-blue-50 text-blue-700 border-blue-200"
-                                    }`}
-                                  >
-                                    {item.trend}
-                                  </Badge>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="pt-0">
-                                <Button
-                                  onClick={() => handleInsightCTA(item.cta)}
-                                  size="sm"
-                                  className="w-full bg-black hover:bg-gray-800 text-white"
-                                >
-                                  {item.cta.label}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          ))}
                         </div>
-                      </div>
-
-                      {/* Under Performing Items */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                          <AlertTriangle className="w-5 h-5 mr-2 text-red-600" />
-                          Under Performing Items
-                        </h3>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          {insightsData.performance.underPerforming.map((item: any) => (
-                            <Card key={item.id}>
-                              <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <CardTitle className="text-base">{item.name}</CardTitle>
-                                    <div className="flex items-center space-x-4 mt-1">
-                                      <span className="text-sm text-gray-600">{item.sales} orders</span>
-                                      <span className="text-sm text-gray-600">${item.revenue}</span>
-                                      <div className="flex items-center">
-                                        <Star className="w-3 h-3 text-yellow-500 mr-1" />
-                                        <span className="text-sm">{item.rating}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
-                                    {item.trend}
-                                  </Badge>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="pt-0">
-                                <div className="mb-3">
-                                  <h5 className="text-sm font-medium text-gray-900 mb-1">Issues:</h5>
-                                  <ul className="text-xs text-gray-600 space-y-1">
-                                    {item.issues.map((issue: string, index: number) => (
-                                      <li key={index}>• {issue}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                                <Button
-                                  onClick={() => handleInsightCTA(item.cta)}
-                                  size="sm"
-                                  className="w-full bg-black hover:bg-gray-800 text-white"
-                                >
-                                  {item.cta.label}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Performance Recommendations */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                          <ArrowUpRight className="w-5 h-5 mr-2 text-blue-600" />
-                          Recommendations
-                        </h3>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                          {insightsData.performance.recommendations.map((rec: any) => (
-                            <Card key={rec.id}>
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-base">{rec.title}</CardTitle>
-                                <CardDescription className="text-sm">{rec.description}</CardDescription>
-                              </CardHeader>
-                              <CardContent className="pt-0">
-                                <Button
-                                  onClick={() => handleInsightCTA(rec.cta)}
-                                  size="sm"
-                                  className="w-full bg-black hover:bg-gray-800 text-white"
-                                >
-                                  {rec.cta.type === "change-design" && <Palette className="w-3 h-3 mr-1" />}
-                                  {rec.cta.type === "reorder-category" && <Move className="w-3 h-3 mr-1" />}
-                                  {rec.cta.type === "add-item-description" && <FileText className="w-3 h-3 mr-1" />}
-                                  {rec.cta.label}
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
+                  </CardContent>
+                </Card>
+
+                {/* Popular Items */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Top Performing Items</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {analytics.popularItems.map((item, index) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Badge
+                              variant="outline"
+                              className="w-6 h-6 rounded-full p-0 flex items-center justify-center"
+                            >
+                              {index + 1}
+                            </Badge>
+                            <div>
+                              <h4 className="font-medium text-sm">{item.name}</h4>
+                              <p className="text-xs text-gray-600">₹{item.price}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">{Math.round(item.popularity_score || 0)}% popularity</p>
+                            <p className="text-xs text-gray-600">
+                              {Math.round((item.profit_margin || 0.3) * 100)}% margin
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Profit Margins */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Profit Margins by Category</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {Object.entries(analytics.profitMargins).map(([category, margin]) => (
+                        <div key={category} className="flex items-center justify-between">
+                          <span className="text-sm">{category}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-32 bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  margin > 40 ? "bg-green-500" : margin > 25 ? "bg-yellow-500" : "bg-red-500"
+                                }`}
+                                style={{ width: `${margin}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium w-12 text-right">{margin.toFixed(1)}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
             )}
           </TabsContent>
 
-          {/* AI Tools Tab */}
-          <TabsContent value="ai-tools">
-            <div className="space-y-6">
-              <div className="grid gap-6 lg:grid-cols-2">
-                <div>
-                  <MenuContentGenerator
-                    onContentGenerated={handleContentGenerated}
-                    existingMenuData={menuData}
-                    className="h-full"
-                  />
+          {/* Design Tab */}
+          <TabsContent value="design" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Menu Design Customization</CardTitle>
+                <CardDescription>Customize the look and feel of your menu</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Color Theme</Label>
+                      <div className="grid grid-cols-4 gap-2 mt-2">
+                        {[
+                          "bg-red-500",
+                          "bg-blue-500",
+                          "bg-green-500",
+                          "bg-purple-500",
+                          "bg-yellow-500",
+                          "bg-pink-500",
+                          "bg-indigo-500",
+                          "bg-gray-500",
+                        ].map((color) => (
+                          <div
+                            key={color}
+                            className={`w-8 h-8 rounded-lg cursor-pointer border-2 border-gray-200 ${color}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Typography</Label>
+                      <Select defaultValue="modern">
+                        <SelectTrigger className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="modern">Modern Sans</SelectItem>
+                          <SelectItem value="classic">Classic Serif</SelectItem>
+                          <SelectItem value="elegant">Elegant Script</SelectItem>
+                          <SelectItem value="bold">Bold Display</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Layout Style</Label>
+                      <Select defaultValue="grid">
+                        <SelectTrigger className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="grid">Grid Layout</SelectItem>
+                          <SelectItem value="list">List Layout</SelectItem>
+                          <SelectItem value="magazine">Magazine Style</SelectItem>
+                          <SelectItem value="minimal">Minimal Design</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Menu Header</Label>
+                      <Input placeholder="Restaurant Name" className="mt-2" defaultValue="Demo Restaurant" />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Tagline</Label>
+                      <Input
+                        placeholder="Your restaurant tagline"
+                        className="mt-2"
+                        defaultValue="Authentic flavors, modern experience"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Logo Upload</Label>
+                      <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">Click to upload logo</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <ContentHistoryTimeline
-                    key={refreshHistory}
-                    onContentApplied={handleContentApplied}
-                    className="h-full"
-                  />
+
+                <Separator />
+
+                <div className="flex justify-between">
+                  <Button variant="outline">
+                    <Eye className="w-4 h-4 mr-1" />
+                    Preview
+                  </Button>
+                  <div className="space-x-2">
+                    <Button variant="outline">Reset</Button>
+                    <Button>
+                      <Save className="w-4 h-4 mr-1" />
+                      Save Design
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Publish Tab */}
+          <TabsContent value="publish" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Publishing Options</CardTitle>
+                <CardDescription>Share your menu across different platforms</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-sm">Digital Formats</h3>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Smartphone className="w-5 h-5 text-blue-600" />
+                          <div>
+                            <p className="text-sm font-medium">Mobile Menu</p>
+                            <p className="text-xs text-gray-600">QR code accessible menu</p>
+                          </div>
+                        </div>
+                        <Button size="sm">Generate QR</Button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Monitor className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="text-sm font-medium">Web Menu</p>
+                            <p className="text-xs text-gray-600">Embeddable web version</p>
+                          </div>
+                        </div>
+                        <Button size="sm">Get Code</Button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Share className="w-5 h-5 text-purple-600" />
+                          <div>
+                            <p className="text-sm font-medium">Social Media</p>
+                            <p className="text-xs text-gray-600">Instagram, Facebook posts</p>
+                          </div>
+                        </div>
+                        <Button size="sm">Share</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-sm">Print Formats</h3>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Printer className="w-5 h-5 text-red-600" />
+                          <div>
+                            <p className="text-sm font-medium">Table Menu</p>
+                            <p className="text-xs text-gray-600">A4 printable format</p>
+                          </div>
+                        </div>
+                        <Button size="sm">Download PDF</Button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Layout className="w-5 h-5 text-yellow-600" />
+                          <div>
+                            <p className="text-sm font-medium">Board Menu</p>
+                            <p className="text-xs text-gray-600">Large display format</p>
+                          </div>
+                        </div>
+                        <Button size="sm">Download PDF</Button>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Download className="w-5 h-5 text-gray-600" />
+                          <div>
+                            <p className="text-sm font-medium">Flyer Menu</p>
+                            <p className="text-xs text-gray-600">Takeaway format</p>
+                          </div>
+                        </div>
+                        <Button size="sm">Download PDF</Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <h3 className="font-medium text-sm">Platform Integration</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { name: "Zomato", status: "connected" },
+                      { name: "Swiggy", status: "disconnected" },
+                      { name: "Uber Eats", status: "connected" },
+                      { name: "Google My Business", status: "connected" },
+                    ].map((platform) => (
+                      <div key={platform.name} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              platform.status === "connected" ? "bg-green-500" : "bg-gray-400"
+                            }`}
+                          />
+                          <span className="text-sm font-medium">{platform.name}</span>
+                        </div>
+                        <Button size="sm" variant={platform.status === "connected" ? "outline" : "default"}>
+                          {platform.status === "connected" ? "Sync" : "Connect"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
-        {/* Modals */}
-        <ImportModal />
-        <EditCategoryModal />
-        <EditItemModal />
-
-        {showExtractModal && (
-          <MenuExtractModal
-            isOpen={showExtractModal}
-            onClose={() => setShowExtractModal(false)}
-            onMenuExtracted={handleMenuExtracted}
-          />
-        )}
-
-        {showGeneratedContent && generatedContent && (
-          <GeneratedContentViewer
-            isOpen={showGeneratedContent}
-            onClose={() => setShowGeneratedContent(false)}
-            content={generatedContent}
-            onApply={(appliedData) => handleContentApplied(generatedContent, appliedData)}
-          />
-        )}
-
-        {/* Menu Preview Modal */}
-        <Dialog open={showPreview} onOpenChange={setShowPreview}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        {/* Item Edit Dialog */}
+        <Dialog open={showItemDialog} onOpenChange={setShowItemDialog}>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Menu Preview</DialogTitle>
+              <DialogTitle>{editingItem ? "Edit Menu Item" : "Add New Menu Item"}</DialogTitle>
+              <DialogDescription>
+                {editingItem ? "Update the details of your menu item" : "Add a new item to your menu"}
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6">
-              {menuData.categories
-                .filter((category) => category.items.some((item) => item.available && item.inStock))
-                .map((category) => (
-                  <div key={category.id}>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">{category.name}</h3>
-                    <div className="space-y-3">
-                      {category.items
-                        .filter((item) => item.available && item.inStock)
-                        .map((item) => (
-                          <div key={item.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
-                            <div className="flex-1">
-                              <h4 className="font-medium text-gray-900">{item.name}</h4>
-                              <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {item.tasteTags?.map((tag) => {
-                                  const config = tasteTagsConfig[tag as keyof typeof tasteTagsConfig]
-                                  if (!config) return null
-                                  const Icon = config.icon
-                                  return (
-                                    <Badge key={tag} variant="outline" className={`text-xs ${config.color}`}>
-                                      <Icon className="w-2.5 h-2.5 mr-1" />
-                                      {config.label}
-                                    </Badge>
-                                  )
-                                })}
-                                {item.promoTags?.map((tag) => {
-                                  const config = promoTagsConfig[tag as keyof typeof promoTagsConfig]
-                                  if (!config) return null
-                                  return (
-                                    <Badge key={tag} variant="outline" className={`text-xs ${config.color}`}>
-                                      {config.label}
-                                    </Badge>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                            <div className="text-lg font-semibold text-gray-900 ml-4">${item.price.toFixed(2)}</div>
-                          </div>
-                        ))}
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Item Name</Label>
+                  <Input placeholder="e.g., Butter Chicken" defaultValue={editingItem?.name || ""} className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Price (₹)</Label>
+                  <Input type="number" placeholder="0.00" defaultValue={editingItem?.price || ""} className="mt-1" />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Description</Label>
+                <Textarea
+                  placeholder="Describe your dish..."
+                  defaultValue={editingItem?.description || ""}
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Category</Label>
+                  <Select defaultValue={editingItem?.category_id || categories[0]?.id}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Prep Time (minutes)</Label>
+                  <Input type="number" placeholder="15" defaultValue={editingItem?.prep_time || ""} className="mt-1" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Calories</Label>
+                  <Input type="number" placeholder="350" defaultValue={editingItem?.calories || ""} className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Dietary Info</Label>
+                  <div className="flex items-center space-x-4 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="vegetarian" className="rounded" />
+                      <Label htmlFor="vegetarian" className="text-sm">
+                        Vegetarian
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="spicy" className="rounded" />
+                      <Label htmlFor="spicy" className="text-sm">
+                        Spicy
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="cold" className="rounded" />
+                      <Label htmlFor="cold" className="text-sm">
+                        Cold
+                      </Label>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch id="available" defaultChecked={editingItem?.is_available ?? true} />
+                <Label htmlFor="available" className="text-sm">
+                  Available for ordering
+                </Label>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setShowItemDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => handleSaveItem({})}>{editingItem ? "Update Item" : "Add Item"}</Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
-
-        {/* Onboarding Continue Button */}
-        {isOnboarding && (
-          <div className="fixed bottom-6 right-6">
-            <Button onClick={handleContinueOnboarding} className="bg-black hover:bg-gray-800 text-white shadow-lg">
-              Continue Setup
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   )

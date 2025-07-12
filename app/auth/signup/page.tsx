@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -12,9 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Logo } from "@/components/logo"
 import { Eye, EyeOff, ArrowLeft, CheckCircle } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function SignupPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(1)
@@ -36,13 +37,37 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (step === 1) {
+      // Validate step 1
+      if (formData.password !== formData.confirmPassword) {
+        toast({
+          title: "Password Mismatch",
+          description: "Passwords do not match. Please try again.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (!formData.agreeToTerms) {
+        toast({
+          title: "Terms Required",
+          description: "Please agree to the terms and conditions.",
+          variant: "destructive",
+        })
+        return
+      }
+
       setStep(2)
     } else {
+      // Step 2: Mock signup for development
       setIsLoading(true)
-      // Simulate signup
       setTimeout(() => {
         setIsLoading(false)
+        toast({
+          title: "Account Created!",
+          description: "Welcome to TableSalt AI. Your account has been created successfully.",
+        })
         router.push("/dashboard")
       }, 2000)
     }
@@ -71,6 +96,7 @@ export default function SignupPage() {
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
+            minLength={6}
           />
           <Button
             type="button"
@@ -201,7 +227,7 @@ export default function SignupPage() {
         </Select>
       </div>
       <div className="flex space-x-3">
-        <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(1)}>
+        <Button type="button" variant="outline" className="flex-1 bg-transparent" onClick={() => setStep(1)}>
           Back
         </Button>
         <Button type="submit" className="flex-1 bg-slate-900 hover:bg-slate-800" disabled={isLoading}>

@@ -1,97 +1,103 @@
 import { NextResponse } from "next/server"
+import OpenAI from "openai"
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    console.log("=== Testing Direct OpenAI API ===")
+    const body = await request.json()
+    const { forceReal = false, prompt = "Say hello" } = body
 
     const apiKey = process.env.OPENAI_API_KEY
 
-    console.log("Environment check:")
-    console.log("- OPENAI_API_KEY exists:", !!apiKey)
-    console.log("- API key length:", apiKey ? apiKey.length : 0)
-    console.log("- API key starts with sk-:", apiKey ? apiKey.startsWith("sk-") : false)
-
-    if (!apiKey || !apiKey.startsWith("sk-")) {
+    if (!apiKey || apiKey.trim() === "" || apiKey === "undefined") {
       return NextResponse.json({
-        success: true,
-        status: "fallback",
-        message: "Hello from TableSalt AI! (No API key configured)",
-        mode: "fallback",
-        note: "OpenAI API key not configured - using fallback responses",
+        success: false,
+        error: "OpenAI API key not configured",
+        message: "Add OPENAI_API_KEY to environment variables",
+        mode: "error",
+        hasApiKey: false,
       })
     }
 
-    // Test direct API call
-    try {
-      console.log("🚀 Testing direct OpenAI API call...")
+    if (forceReal) {
+      try {
+        const openai = new OpenAI({
+          apiKey: apiKey,
+          timeout: 30000,
+        })
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
+        const startTime = Date.now()
+        const completion = await openai.chat.completions.create({
           model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: "Say 'Hello from OpenAI API!'" }],
-          max_tokens: 15,
-          temperature: 0.1,
-        }),
-      })
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: 100,
+          temperature: 0.7,
+        })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("❌ OpenAI API error:", response.status, errorText)
+        const endTime = Date.now()
+        const responseTime = endTime - startTime
+
+        const usage = completion.usage
+        const cost = usage
+          ? {
+              promptTokens: usage.prompt_tokens,
+              completionTokens: usage.completion_tokens,
+              totalTokens: usage.total_tokens,
+              estimatedCost: (usage.prompt_tokens * 0.0015 + usage.completion_tokens * 0.002) / 1000,
+              totalCost: ((usage.prompt_tokens * 0.0015 + usage.completion_tokens * 0.002) / 1000).toFixed(4),
+            }
+          : null
 
         return NextResponse.json({
           success: true,
-          status: "fallback",
-          message: "Hello from TableSalt AI! (API error - using fallback)",
-          mode: "fallback",
-          note: `OpenAI API error: ${response.status} - falling back to intelligent responses`,
-          error: errorText,
+          message: completion.choices[0]?.message?.content || "No response",
+          mode: "real",
+          model: "gpt-3.5-turbo",
+          usage: usage,
+          cost: cost,
+          responseTime: responseTime,
+          hasApiKey: true,
+        })
+      } catch (openaiError: any) {
+        console.error("Real OpenAI Error:", openaiError)
+
+        return NextResponse.json({
+          success: false,
+          error: openaiError.message || "OpenAI API call failed",
+          message: "Real OpenAI connection failed",
+          mode: "error",
+          details: openaiError.code || "Unknown error",
+          hasApiKey: true,
         })
       }
-
-      const data = await response.json()
-      const message = data.choices?.[0]?.message?.content || "No response from OpenAI"
-
-      console.log("✅ Direct OpenAI API test successful!")
-
-      return NextResponse.json({
-        success: true,
-        status: "success",
-        message: message,
-        mode: "openai",
-        note: "Connected to OpenAI via direct API call",
-        usage: data.usage,
-        cost: data.usage
-          ? {
-              inputCost: (data.usage.prompt_tokens / 1000) * 0.0015,
-              outputCost: (data.usage.completion_tokens / 1000) * 0.002,
-              totalCost: (data.usage.prompt_tokens / 1000) * 0.0015 + (data.usage.completion_tokens / 1000) * 0.002,
-            }
-          : null,
-      })
-    } catch (fetchError) {
-      console.error("❌ Direct API call failed:", fetchError)
-
-      return NextResponse.json({
-        success: true,
-        status: "fallback",
-        message: "Hello from TableSalt AI! (Connection error - using fallback)",
-        mode: "fallback",
-        note: `Network error: ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`,
-      })
     }
-  } catch (error) {
-    console.error("❌ Test route error:", error)
 
     return NextResponse.json({
       success: false,
-      status: "error",
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: "forceReal parameter required for real testing",
       mode: "error",
     })
+  } catch (error) {
+    console.error("Test OpenAI Error:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+        mode: "error",
+      },
+      { status: 500 },
+    )
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    message: "OpenAI Test API",
+    usage: "Send POST request with forceReal: true to test real OpenAI",
+    status: "available",
+  })
 }

@@ -1,41 +1,102 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 
-// Create Supabase server client
-export function createClient() {
-  const cookieStore = cookies()
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
+// Check if we're in a server environment that supports Supabase
+const canUseSupabase = () => {
+  return !!(supabaseUrl && supabaseServiceKey && typeof cookies !== "undefined")
+}
+
+// Create Supabase server client
+export async function createClient() {
+  if (!canUseSupabase()) {
+    console.log("Using mock server client - Supabase not available")
+    return createMockServerClient()
+  }
+
+  try {
+    const cookieStore = await cookies()
+
+    return createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // Ignore cookie setting errors in preview
+          }
+        },
+        remove(name: string, options: any) {
+          try {
+            cookieStore.set({ name, value: "", ...options })
+          } catch (error) {
+            // Ignore cookie removal errors in preview
+          }
+        },
       },
-      set(name: string, value: string, options: CookieOptions) {
-        try {
-          cookieStore.set({ name, value, ...options })
-        } catch (error) {
-          // The `set` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
-        }
-      },
-      remove(name: string, options: CookieOptions) {
-        try {
-          cookieStore.set({ name, value: "", ...options })
-        } catch (error) {
-          // The `delete` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
-        }
-      },
+    })
+  } catch (error) {
+    console.log("Falling back to mock server client")
+    return createMockServerClient()
+  }
+}
+
+// Mock server client for preview environments
+function createMockServerClient() {
+  const mockData = {
+    restaurant: {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      name: "Spice Garden Mumbai",
+      cuisine_type: "Indian",
+      avg_rating: 4.3,
+      total_reviews: 247,
     },
-  })
+    menuItems: [
+      { id: "1", name: "Butter Chicken", price: 380, category: "Main Course" },
+      { id: "2", name: "Dal Makhani", price: 280, category: "Main Course" },
+    ],
+    reviews: [
+      { id: "1", author_name: "Priya", rating: 5, content: "Amazing food!" },
+      { id: "2", author_name: "Arjun", rating: 4, content: "Great taste, slow service" },
+    ],
+  }
+
+  return {
+    auth: {
+      getUser: async () => ({ data: { user: { id: "mock-user" } }, error: null }),
+    },
+    from: (table: string) => ({
+      select: () => ({
+        eq: () => ({
+          single: async () => {
+            await new Promise((resolve) => setTimeout(resolve, 300))
+            return { data: mockData.restaurant, error: null }
+          },
+        }),
+        then: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 300))
+          if (table === "menu_items") return { data: mockData.menuItems, error: null }
+          if (table === "reviews") return { data: mockData.reviews, error: null }
+          return { data: [], error: null }
+        },
+      }),
+      insert: async () => ({ data: { id: "mock-insert" }, error: null }),
+      update: () => ({
+        eq: () => ({
+          select: async () => ({ data: { id: "mock-update" }, error: null }),
+        }),
+      }),
+    }),
+  } as any
 }
 
 // Get Supabase server client (alias for compatibility)
-export function getSupabaseServerClient() {
-  return createClient()
-}
+export const getSupabaseServerClient = createClient
 
 // User management functions
 export async function createUser(userData: {
@@ -45,7 +106,7 @@ export async function createUser(userData: {
   lastName: string
   restaurantName?: string
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -94,7 +155,7 @@ export async function createUser(userData: {
 
 // Get user profile
 export async function getUserProfile(userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase.from("user_profiles").select("*").eq("id", userId).single()
@@ -116,7 +177,7 @@ export async function getUserProfile(userId: string) {
 
 // Update user profile
 export async function updateUserProfile(userId: string, updates: any) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
@@ -154,7 +215,7 @@ export async function createRestaurant(restaurantData: {
   phone?: string
   website?: string
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
@@ -189,7 +250,7 @@ export async function createRestaurant(restaurantData: {
 
 // Get restaurant by user ID
 export async function getRestaurantByUserId(userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase.from("restaurants").select("*").eq("user_id", userId).single()
@@ -220,7 +281,7 @@ export async function createMenuItem(itemData: {
   dietary_info?: string[]
   image_url?: string
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
@@ -256,7 +317,7 @@ export async function createMenuItem(itemData: {
 
 // Get menu items by restaurant ID
 export async function getMenuItems(restaurantId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
@@ -290,7 +351,7 @@ export async function createCustomer(customerData: {
   preferences?: string[]
   notes?: string
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
@@ -326,7 +387,7 @@ export async function createCustomer(customerData: {
 
 // Get customers by restaurant ID
 export async function getCustomers(restaurantId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase
@@ -352,7 +413,7 @@ export async function getCustomers(restaurantId: string) {
 
 // Analytics functions
 export async function getRestaurantAnalytics(restaurantId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     // Get basic stats
@@ -396,7 +457,7 @@ export async function getRestaurantAnalytics(restaurantId: string) {
 
 // Test database connection
 export async function testDatabaseConnection() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   try {
     const { data, error } = await supabase.from("user_profiles").select("count").limit(1)

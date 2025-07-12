@@ -1,17 +1,11 @@
 import type React from "react"
-import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import { AppNavigation } from "@/components/layout/app-navigation"
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from "@/lib/auth/auth-context"
 
 const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "TableSalt AI - Restaurant Management Platform",
-  description: "AI-powered restaurant management platform for smart profiles, menu optimization, and customer insights",
-    generator: 'v0.dev'
-}
 
 export default function RootLayout({
   children,
@@ -19,13 +13,24 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <div className="min-h-screen bg-white">{children}</div>
+    <html lang="en">
+      <body className={inter.className}>
+        <AuthProvider>
+          <div className="min-h-screen bg-gray-50">
+            <AppNavigation />
+
+            {/* Main Content */}
+            <div className="lg:pl-72">
+              <main className="min-h-screen">{children}</main>
+            </div>
+          </div>
           <Toaster />
-        </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )
 }
+
+export const metadata = {
+      generator: 'v0.dev'
+    };

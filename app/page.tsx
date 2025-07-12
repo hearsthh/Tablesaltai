@@ -1,558 +1,332 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { createBrowserClient } from "@/lib/supabase/client"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  ChefHat,
-  Sparkles,
-  Users,
-  Star,
-  ArrowRight,
-  CheckCircle,
-  Globe,
-  Target,
-  Shield,
-  Play,
-  Menu,
-  X,
-} from "lucide-react"
+import { Utensils, Star, TrendingUp, MessageSquare, BarChart3, Sparkles, ArrowRight, CheckCircle } from "lucide-react"
 
 export default function HomePage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
-
-  const features = [
-    {
-      icon: <ChefHat className="h-8 w-8 text-blue-600" />,
-      title: "Smart Profile Management",
-      description:
-        "AI-powered restaurant profiles that automatically sync across all platforms. Manage your menu, photos, and business information from one central dashboard.",
-      benefits: [
-        "Auto-sync across 15+ platforms",
-        "AI-generated descriptions",
-        "Real-time menu updates",
-        "Professional photo optimization",
-      ],
-    },
-    {
-      icon: <Target className="h-8 w-8 text-green-600" />,
-      title: "Intelligent Marketing Hub",
-      description:
-        "Create, schedule, and optimize marketing campaigns across social media, email, and review platforms with AI-powered content generation.",
-      benefits: [
-        "AI content generation",
-        "Multi-platform scheduling",
-        "Performance analytics",
-        "Automated A/B testing",
-      ],
-    },
-    {
-      icon: <Users className="h-8 w-8 text-purple-600" />,
-      title: "Customer Intelligence Engine",
-      description:
-        "Deep insights into customer behavior, preferences, and lifetime value. Predict churn, identify VIP customers, and personalize experiences.",
-      benefits: ["Predictive analytics", "Customer segmentation", "Churn prevention", "Personalized recommendations"],
-    },
-  ]
-
-  const testimonials = [
-    {
-      name: "Rajesh Kumar",
-      restaurant: "Spice Garden, Mumbai",
-      rating: 5,
-      text: "TableSalt AI increased our online orders by 40% in just 2 months. The AI-generated social media content is incredible!",
-      avatar: "/placeholder.svg?height=60&width=60&text=RK",
-    },
-    {
-      name: "Priya Sharma",
-      restaurant: "Café Delight, Delhi",
-      rating: 5,
-      text: "Managing multiple platforms was a nightmare. Now everything is automated and our customer engagement has tripled.",
-      avatar: "/placeholder.svg?height=60&width=60&text=PS",
-    },
-    {
-      name: "Amit Patel",
-      restaurant: "Tandoor Express, Bangalore",
-      rating: 5,
-      text: "The customer insights helped us identify our most valuable customers. Our retention rate improved by 60%.",
-      avatar: "/placeholder.svg?height=60&width=60&text=AP",
-    },
-  ]
-
-  const stats = [
-    { number: "500+", label: "Restaurants Powered" },
-    { number: "2.5M+", label: "Orders Processed" },
-    { number: "40%", label: "Average Revenue Increase" },
-    { number: "15+", label: "Platform Integrations" },
-  ]
-
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "₹2,999",
-      period: "/month",
-      description: "Perfect for small restaurants getting started",
-      features: [
-        "Smart Profile Management",
-        "Basic Marketing Tools",
-        "Customer Analytics",
-        "5 Platform Integrations",
-        "Email Support",
-      ],
-      popular: false,
-    },
-    {
-      name: "Professional",
-      price: "₹5,999",
-      period: "/month",
-      description: "Ideal for growing restaurants",
-      features: [
-        "Everything in Starter",
-        "Advanced AI Marketing",
-        "Predictive Analytics",
-        "15+ Platform Integrations",
-        "Priority Support",
-        "Custom Branding",
-      ],
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "",
-      description: "For restaurant chains and franchises",
-      features: [
-        "Everything in Professional",
-        "Multi-location Management",
-        "Advanced Reporting",
-        "API Access",
-        "Dedicated Account Manager",
-        "Custom Integrations",
-      ],
-      popular: false,
-    },
-  ]
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [restaurantData, setRestaurantData] = useState<any>(null)
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [testimonials.length])
+    const initializeApp = async () => {
+      try {
+        const supabase = createBrowserClient()
 
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                <ChefHat className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-black">TableSalt AI</span>
-            </Link>
+        // Check authentication
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser()
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href="#features" className="text-gray-600 hover:text-black transition-colors">
-                Features
-              </Link>
-              <Link href="#pricing" className="text-gray-600 hover:text-black transition-colors">
-                Pricing
-              </Link>
-              <Link href="#testimonials" className="text-gray-600 hover:text-black transition-colors">
-                Reviews
-              </Link>
-              <Link href="/dashboard" className="text-gray-600 hover:text-black transition-colors">
-                Dashboard
-              </Link>
-            </nav>
+        if (user) {
+          setUser(user)
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Link href="/auth/login">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button className="bg-black hover:bg-gray-800 text-white">Get Started</Button>
-              </Link>
-            </div>
+          // Fetch restaurant data
+          const { data: restaurant } = await supabase
+            .from("restaurant_profiles")
+            .select("*")
+            .eq("user_id", user.id)
+            .single()
 
-            {/* Mobile Menu Button */}
-            <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
+          setRestaurantData(restaurant)
+        }
+      } catch (error) {
+        console.log("Using demo mode for preview")
+        // Set demo data for preview
+        setUser({ id: "demo-user", email: "demo@restaurant.com" })
+        setRestaurantData({
+          id: "demo-restaurant",
+          name: "Spice Garden Mumbai",
+          cuisine_type: "Indian",
+          avg_rating: 4.3,
+          total_reviews: 247,
+          monthly_revenue: 450000,
+          monthly_orders: 1250,
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
 
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-200">
-              <nav className="flex flex-col space-y-4">
-                <Link href="#features" className="text-gray-600 hover:text-black transition-colors">
-                  Features
-                </Link>
-                <Link href="#pricing" className="text-gray-600 hover:text-black transition-colors">
-                  Pricing
-                </Link>
-                <Link href="#testimonials" className="text-gray-600 hover:text-black transition-colors">
-                  Reviews
-                </Link>
-                <Link href="/dashboard" className="text-gray-600 hover:text-black transition-colors">
-                  Dashboard
-                </Link>
-                <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                  <Link href="/auth/login">
-                    <Button variant="ghost" className="w-full">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link href="/auth/signup">
-                    <Button className="w-full bg-black hover:bg-gray-800 text-white">Get Started</Button>
-                  </Link>
-                </div>
-              </nav>
-            </div>
-          )}
+    initializeApp()
+  }, [])
+
+  useEffect(() => {
+    // Redirect to dashboard on load
+    if (user) {
+      router.push("/dashboard")
+    }
+  }, [user, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Tablesalt</h1>
+          <p className="text-gray-600">Loading your restaurant dashboard...</p>
         </div>
-      </header>
+      </div>
+    )
+  }
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white py-20 sm:py-32">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-6">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                🇮🇳 Launching in India
-              </Badge>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <Globe className="h-3 w-3 mr-1" />
-                Global Platform
-              </Badge>
-              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                <Sparkles className="h-3 w-3 mr-1" />
-                AI-First
-              </Badge>
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Hero Section */}
+        <div className="container mx-auto px-4 py-16">
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center mb-6">
+              <div className="bg-black p-3 rounded-2xl">
+                <Utensils className="w-8 h-8 text-white" />
+              </div>
             </div>
-
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-black mb-6">
-              <span className="block">AI-Powered</span>
-              <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Restaurant Growth
-              </span>
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              Smart Restaurant
+              <span className="text-black"> Marketing</span>
             </h1>
-
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Transform your restaurant with intelligent profiling, automated marketing, and customer insights. Built
-              for global restaurants, launching in India.
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              AI-powered platform to grow your restaurant with intelligent marketing, menu optimization, and customer
+              insights.
             </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-12">
-              <Link href="/auth/signup">
-                <Button size="lg" className="bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Try AI Menu Builder
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="px-8 py-4 text-lg bg-transparent">
-                <Play className="h-5 w-5 mr-2" />
-                Watch Demo
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="bg-black hover:bg-gray-800" onClick={() => router.push("/auth/signup")}>
+                Start Free Trial
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => router.push("/dashboard")}>
+                View Demo Dashboard
               </Button>
             </div>
+          </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl font-bold text-black mb-2">{stat.number}</div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <div className="bg-gray-100 p-3 rounded-lg w-fit">
+                  <BarChart3 className="w-6 h-6 text-gray-600" />
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">Three Powerful AI Modules</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Complete restaurant management solution with AI automation at every step
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="bg-white border-gray-200 hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center space-x-3 mb-4">
-                    {feature.icon}
-                    <CardTitle className="text-xl font-semibold text-black">{feature.title}</CardTitle>
-                  </div>
-                  <CardDescription className="text-gray-600 text-base">{feature.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {feature.benefits.map((benefit, benefitIndex) => (
-                      <li key={benefitIndex} className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="text-sm text-gray-700">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">Loved by Restaurant Owners</h2>
-            <p className="text-xl text-gray-600">See how TableSalt AI is transforming restaurants across India</p>
-          </div>
-
-          <div className="max-w-4xl mx-auto">
-            <Card className="bg-white border-gray-200">
-              <CardContent className="p-8">
-                <div className="text-center">
-                  <div className="flex items-center justify-center mb-4">
-                    {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-500 fill-current" />
-                    ))}
-                  </div>
-                  <blockquote className="text-xl text-gray-800 mb-6">
-                    "{testimonials[currentTestimonial].text}"
-                  </blockquote>
-                  <div className="flex items-center justify-center space-x-4">
-                    <img
-                      src={testimonials[currentTestimonial].avatar || "/placeholder.svg"}
-                      alt={testimonials[currentTestimonial].name}
-                      className="w-12 h-12 rounded-full"
-                    />
-                    <div className="text-left">
-                      <div className="font-semibold text-black">{testimonials[currentTestimonial].name}</div>
-                      <div className="text-sm text-gray-600">{testimonials[currentTestimonial].restaurant}</div>
-                    </div>
-                  </div>
-                </div>
+                <CardTitle>Smart Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Real-time insights on menu performance, customer behavior, and revenue optimization.
+                </p>
               </CardContent>
             </Card>
 
-            {/* Testimonial Indicators */}
-            <div className="flex items-center justify-center space-x-2 mt-6">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    index === currentTestimonial ? "bg-black" : "bg-gray-300"
-                  }`}
-                  onClick={() => setCurrentTestimonial(index)}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-gray-600">Choose the perfect plan for your restaurant's growth</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingPlans.map((plan, index) => (
-              <Card
-                key={index}
-                className={`bg-white border-gray-200 relative ${plan.popular ? "ring-2 ring-black" : ""}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-black text-white">Most Popular</Badge>
-                  </div>
-                )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl font-bold text-black">{plan.name}</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-black">{plan.price}</span>
-                    <span className="text-gray-600">{plan.period}</span>
-                  </div>
-                  <CardDescription className="mt-2">{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="text-sm text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`w-full ${
-                      plan.popular
-                        ? "bg-black hover:bg-gray-800 text-white"
-                        : "bg-white hover:bg-gray-50 text-black border border-gray-300"
-                    }`}
-                  >
-                    {plan.name === "Enterprise" ? "Contact Sales" : "Get Started"}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-black text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Transform Your Restaurant?</h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join hundreds of restaurants already using TableSalt AI to grow their business
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Link href="/auth/signup">
-              <Button size="lg" className="bg-white hover:bg-gray-100 text-black px-8 py-4 text-lg">
-                Start Free Trial
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg bg-transparent"
-            >
-              Schedule Demo
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-50 py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                  <ChefHat className="h-5 w-5 text-white" />
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <div className="bg-gray-100 p-3 rounded-lg w-fit">
+                  <Sparkles className="w-6 h-6 text-gray-600" />
                 </div>
-                <span className="text-xl font-bold text-black">TableSalt AI</span>
-              </div>
-              <p className="text-gray-600 mb-4">
-                AI-powered restaurant management platform built for global restaurants.
-              </p>
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <Shield className="h-4 w-4" />
-                <span>Enterprise-grade security</span>
-              </div>
-            </div>
+                <CardTitle>AI Marketing</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Automated campaigns, content generation, and customer targeting powered by AI.
+                </p>
+              </CardContent>
+            </Card>
 
-            <div>
-              <h3 className="font-semibold text-black mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>
-                  <Link href="#features" className="hover:text-black transition-colors">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="hover:text-black transition-colors">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard" className="hover:text-black transition-colors">
-                    Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/integrations" className="hover:text-black transition-colors">
-                    Integrations
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-black mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>
-                  <Link href="/about" className="hover:text-black transition-colors">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/blog" className="hover:text-black transition-colors">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/careers" className="hover:text-black transition-colors">
-                    Careers
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-black transition-colors">
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-black mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>
-                  <Link href="/help" className="hover:text-black transition-colors">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="hover:text-black transition-colors">
-                    Documentation
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/api" className="hover:text-black transition-colors">
-                    API
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/status" className="hover:text-black transition-colors">
-                    Status
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <div className="bg-gray-100 p-3 rounded-lg w-fit">
+                  <MessageSquare className="w-6 h-6 text-gray-600" />
+                </div>
+                <CardTitle>Review Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Auto-respond to reviews, track sentiment, and improve your online reputation.
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="border-t border-gray-200 mt-8 pt-8 flex flex-col md:flex-row items-center justify-between">
-            <p className="text-gray-600 text-sm">© 2024 TableSalt AI. All rights reserved.</p>
-            <div className="flex items-center space-x-6 mt-4 md:mt-0">
-              <Link href="/privacy" className="text-gray-600 hover:text-black text-sm transition-colors">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-gray-600 hover:text-black text-sm transition-colors">
-                Terms of Service
-              </Link>
+          {/* Stats Section */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Growing Restaurants</h2>
+              <p className="text-gray-600">Join thousands of restaurants already growing with our platform</p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-black mb-2">2,500+</div>
+                <div className="text-gray-600">Active Restaurants</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-700 mb-2">35%</div>
+                <div className="text-gray-600">Avg Revenue Increase</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-700 mb-2">4.8★</div>
+                <div className="text-gray-600">Customer Rating</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-700 mb-2">24/7</div>
+                <div className="text-gray-600">AI Support</div>
+              </div>
             </div>
           </div>
         </div>
-      </footer>
+      </div>
+    )
+  }
+
+  // User is logged in - show dashboard preview
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Welcome back! 👋</h1>
+              <p className="text-gray-600">
+                {restaurantData?.name || "Your Restaurant"} • {restaurantData?.cuisine_type || "Cuisine"}
+              </p>
+            </div>
+            <Badge className="bg-green-100 text-green-800">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Active
+            </Badge>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Rating</p>
+                  <p className="text-2xl font-bold">{restaurantData?.avg_rating || "4.3"}</p>
+                </div>
+                <Star className="w-8 h-8 text-gray-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Reviews</p>
+                  <p className="text-2xl font-bold">{restaurantData?.total_reviews || "247"}</p>
+                </div>
+                <MessageSquare className="w-8 h-8 text-gray-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Orders</p>
+                  <p className="text-2xl font-bold">{restaurantData?.monthly_orders || "1.2K"}</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-gray-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Revenue</p>
+                  <p className="text-2xl font-bold">₹{(restaurantData?.monthly_revenue || 450000) / 1000}K</p>
+                </div>
+                <BarChart3 className="w-8 h-8 text-gray-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+                onClick={() => router.push("/dashboard")}
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                View Full Dashboard
+              </Button>
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+                onClick={() => router.push("/marketing")}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Create Marketing Campaign
+              </Button>
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+                onClick={() => router.push("/reviews")}
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Manage Reviews
+              </Button>
+              <Button
+                className="w-full justify-start bg-transparent"
+                variant="outline"
+                onClick={() => router.push("/menu")}
+              >
+                <Utensils className="w-4 h-4 mr-2" />
+                Optimize Menu
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">New 5-star review received</p>
+                    <p className="text-xs text-gray-500">2 hours ago</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Marketing campaign launched</p>
+                    <p className="text-xs text-gray-500">1 day ago</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Menu item optimized</p>
+                    <p className="text-xs text-gray-500">2 days ago</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
